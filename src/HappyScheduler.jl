@@ -1,5 +1,5 @@
 module HappyScheduler
 
-# Write your package code here.
+include("RoomAllocation.jl")
 
 end
