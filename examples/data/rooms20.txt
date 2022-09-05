@@ -1,5 +1,0 @@
-name; capacity; gender
-Raum 1; 10; M
-Raum 2; 10; F
-Zusatzraum M; 5; M
-Zusatzraum F; 5; F
