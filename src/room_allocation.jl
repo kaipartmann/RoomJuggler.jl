@@ -101,7 +101,7 @@ struct GenderSepRoomAllocationProblem
         n_total_guests = rap_f.n_guests + rap_m.n_guests
         n_total_wishes = rap_f.n_wishes + rap_m.n_wishes
         n_total_rooms = rap_f.n_rooms + rap_m.n_rooms
-        n_total_beds = rap_f.n_guests + rap_m.n_guests
+        n_total_beds = rap_f.n_beds + rap_m.n_beds
         @assert n_total_guests == length(guests)
         @assert n_total_wishes == length(wishes)
         @assert n_total_rooms == length(rooms)
@@ -328,9 +328,9 @@ function simulated_annealing(rap::RoomAllocationProblem;
         error("Infinity-loop: β >= 1. Must be 0 < β < 1")
     end
     happiness_history = Vector{Float64}()
-    guests_per_wish = [length(w.guest_ids) for w in rap.wishes]
-    target_happiness = -sum(guests_per_wish .* guests_per_wish .-1)
-    all_wishes_fulfilled = false
+    # guests_per_wish = [length(w.guest_ids) for w in rap.wishes]
+    # target_happiness = -sum(guests_per_wish .* guests_per_wish .-1)
+    # all_wishes_fulfilled = false
     current_allocation = initialize_allocation(rap)
     current_happiness = calc_happiness(current_allocation, rap.relations)
     temp_history = temperature_history(start_temp, minimum_temp, β)
@@ -357,12 +357,12 @@ function simulated_annealing(rap::RoomAllocationProblem;
             current_happiness = new_happiness
         end
         happiness_history[iteration_counter] = current_happiness
-        if current_happiness == target_happiness
-            all_wishes_fulfilled = true
-            happiness_history = happiness_history[1:iteration_counter]
-            break
-        end
-        next!(p, showvalues = gen_showvalues(-current_happiness, temp))
+        # if current_happiness == target_happiness
+        #     all_wishes_fulfilled = true
+        #     happiness_history = happiness_history[1:iteration_counter]
+        #     break
+        # end
+        next!(p)
     end
     finish!(p)
     results = RoomAllocationResults(
