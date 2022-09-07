@@ -7,10 +7,16 @@ using LinearAlgebra
 using StatsBase: sample
 using ProgressMeter
 
-export get_guests, get_wishes, get_rooms
-export Guest, Wish, Room, RoomAllocationProblem, GenderSepRoomAllocationProblem
-export simulated_annealing
-export calc_room_id_of_guest, calc_guest_ids_of_room
+export Guest, Wish, Room, RoomAllocationProblem, gender_separated_raps
+export simulated_annealing!
+export export_results
+
+const banner = raw"""
+            ░▒█░▒█░█▀▀▄░▄▀▀▄░▄▀▀▄░█░░█░▒█▀▀▀█░█▀▄░█░░░░█▀▀░█▀▄░█░▒█░█░░█▀▀░█▀▀▄
+            ░▒█▀▀█░█▄▄█░█▄▄█░█▄▄█░█▄▄█░░▀▀▀▄▄░█░░░█▀▀█░█▀▀░█░█░█░▒█░█░░█▀▀░█▄▄▀
+            ░▒█░▒█░▀░░▀░█░░░░█░░░░▄▄▄▀░▒█▄▄▄█░▀▀▀░▀░░▀░▀▀▀░▀▀░░░▀▀▀░▀▀░▀▀▀░▀░▀▀
+
+"""
 
 include("room_allocation.jl")
 

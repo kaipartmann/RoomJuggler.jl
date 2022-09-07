@@ -34,6 +34,9 @@ struct RoomAllocationProblem
     wishes::Vector{Wish}
     rooms::Vector{Room}
     relations::SparseMatrixCSC{Int64, Int64}
+    room_id_of_guest::Vector{Int}
+    guest_ids_of_room::Vector{Vector{Int}}
+    fulfilled_wishes::Vector{Bool}
 
     function RoomAllocationProblem(
         guests::Vector{Guest},
@@ -53,6 +56,9 @@ struct RoomAllocationProblem
             error(msg)
         end
         relations = find_relations(wishes, n_beds)
+        room_id_of_guest = zeros(Int, n_guests)
+        guest_ids_of_room = fill(Vector{Int}(), n_rooms)
+        fulfilled_wishes = zeros(Bool, n_wishes)
         new(
             n_guests,
             n_wishes,
@@ -62,6 +68,9 @@ struct RoomAllocationProblem
             wishes,
             rooms,
             relations,
+            room_id_of_guest,
+            guest_ids_of_room,
+            fulfilled_wishes
         )
     end
 end
@@ -77,37 +86,21 @@ function RoomAllocationProblem(
     return RoomAllocationProblem(guests, wishes, rooms)
 end
 
-struct GenderSepRoomAllocationProblem
-    n_total_guests::Int
-    n_total_wishes::Int
-    n_total_rooms::Int
-    n_total_beds::Int
-    rap_f::RoomAllocationProblem
-    rap_m::RoomAllocationProblem
-    function GenderSepRoomAllocationProblem(
-        guests_file::String,
-        wishes_file::String,
-        rooms_file::String
-    )
-        guests = get_guests(guests_file)
-        wishes = get_wishes(wishes_file, guests)
-        rooms = get_rooms(rooms_file)
-        guests_f, wishes_f = filter_genders(guests, wishes, :F)
-        guests_m, wishes_m = filter_genders(guests, wishes, :M)
-        rooms_f = filter(x -> x.gender == :F, rooms)
-        rooms_m = filter(x -> x.gender == :M, rooms)
-        rap_f = RoomAllocationProblem(guests_f, wishes_f, rooms_f)
-        rap_m = RoomAllocationProblem(guests_m, wishes_m, rooms_m)
-        n_total_guests = rap_f.n_guests + rap_m.n_guests
-        n_total_wishes = rap_f.n_wishes + rap_m.n_wishes
-        n_total_rooms = rap_f.n_rooms + rap_m.n_rooms
-        n_total_beds = rap_f.n_beds + rap_m.n_beds
-        @assert n_total_guests == length(guests)
-        @assert n_total_wishes == length(wishes)
-        @assert n_total_rooms == length(rooms)
-        @assert n_total_beds == sum([r.capacity for r in rooms])
-        new(n_total_guests, n_total_wishes, n_total_rooms, n_total_beds, rap_f, rap_m)
-    end
+function gender_separated_raps(
+    guests_file::String,
+    wishes_file::String,
+    rooms_file::String
+)
+    guests = get_guests(guests_file)
+    wishes = get_wishes(wishes_file, guests)
+    rooms = get_rooms(rooms_file)
+    guests_f, wishes_f = filter_genders(guests, wishes, :F)
+    guests_m, wishes_m = filter_genders(guests, wishes, :M)
+    rooms_f = filter(x -> x.gender == :F, rooms)
+    rooms_m = filter(x -> x.gender == :M, rooms)
+    rap_f = RoomAllocationProblem(guests_f, wishes_f, rooms_f)
+    rap_m = RoomAllocationProblem(guests_m, wishes_m, rooms_m)
+    return rap_f, rap_m
 end
 
 function get_guests(file::String)
@@ -288,49 +281,19 @@ function filter_genders(guests::Vector{Guest}, wishes::Vector{Wish}, gender::Sym
     return guests_gender, wishes_gender
 end
 
-struct RoomAllocationResults
-    rap::RoomAllocationProblem
-    n_total_iter::Int
-    temp_history::Vector{Float64}
-    happiness_history::Vector{Int}
-    room_id_of_guest::Vector{Int}
-    guest_ids_of_room::Vector{Vector{Int}}
-    fulfilled_wishes::Vector{Bool}
-    function RoomAllocationResults(
-        rap::RoomAllocationProblem,
-        temp_history::Vector{Float64},
-        happiness_history::Vector{Int},
-        allocation::SparseMatrixCSC{Int64, Int64},
-    )
-        n_total_iter = length(happiness_history)
-        room_id_of_guest = calc_room_id_of_guest(allocation, rap.n_guests)
-        guest_ids_of_room = calc_guest_ids_of_room(allocation, rap.n_guests, rap.n_rooms)
-        fulfilled_wishes = calc_fulfilled_wishes(rap.wishes, room_id_of_guest)
-        new(
-            rap,
-            n_total_iter,
-            temp_history,
-            happiness_history,
-            room_id_of_guest,
-            guest_ids_of_room,
-            fulfilled_wishes,
-        )
-    end
-end
-
-function simulated_annealing(rap::RoomAllocationProblem;
+function simulated_annealing!(rap::RoomAllocationProblem;
     start_temp=1.0,
     minimum_temp=1e-7,
     β=0.99,
-    n_iter=100
+    n_iter=100,
 )
+    printstyled(banner; color=:blue)
     if β >= 1
         error("Infinity-loop: β >= 1. Must be 0 < β < 1")
     end
     happiness_history = Vector{Float64}()
-    # guests_per_wish = [length(w.guest_ids) for w in rap.wishes]
-    # target_happiness = -sum(guests_per_wish .* guests_per_wish .-1)
-    # all_wishes_fulfilled = false
+    target_happiness = -length(findall(!iszero, rap.relations))
+    all_wishes_fulfilled = false
     current_allocation = initialize_allocation(rap)
     current_happiness = calc_happiness(current_allocation, rap.relations)
     temp_history = temperature_history(start_temp, minimum_temp, β)
@@ -338,10 +301,10 @@ function simulated_annealing(rap::RoomAllocationProblem;
     happiness_history = zeros(Int, n_total_iter)
     iteration_counter = 0
     p = Progress(n_total_iter;
-        dt = 1,
-        desc = "Optimizing...",
-        barlen = 50,
-        color = :normal
+        dt=1,
+        desc="Running...",
+        barlen=50,
+        color=:normal,
     )
     for temp in temp_history, _ in 1:n_iter
         iteration_counter += 1
@@ -357,22 +320,22 @@ function simulated_annealing(rap::RoomAllocationProblem;
             current_happiness = new_happiness
         end
         happiness_history[iteration_counter] = current_happiness
-        # if current_happiness == target_happiness
-        #     all_wishes_fulfilled = true
-        #     happiness_history = happiness_history[1:iteration_counter]
-        #     break
-        # end
-        next!(p)
+        if current_happiness == target_happiness
+            all_wishes_fulfilled = true
+            happiness_history = happiness_history[1:iteration_counter]
+            break
+        end
+        next!(p, showvalues=gen_showvals(iteration_counter, -current_happiness))
     end
     finish!(p)
-    results = RoomAllocationResults(
-        rap,
-        temp_history,
-        happiness_history,
-        current_allocation,
-    )
-    return results
+    @printf("%.2f %% of wishes fulfilled\n", 100 * current_happiness/target_happiness)
+    calc_room_id_of_guest!(rap, current_allocation)
+    calc_guest_ids_of_room!(rap, current_allocation)
+    calc_fulfilled_wishes!(rap)
+    return happiness_history, temp_history
 end
+
+gen_showvals(iteration, happiness) = ()->[(:iteration, iteration), (:happiness, happiness)]
 
 function temperature_history(temp, temp_min, β)
     temp_history = Vector{Float64}()
@@ -422,41 +385,40 @@ function get_new_allocation(allocation, n_rooms)
     return allocation_copy
 end
 
-function calc_room_id_of_guest(allocation::SparseMatrixCSC{Int, Int}, n_guests::Int)
-    room_id_of_guest = zeros(Int, n_guests)
-    for (guest_id, col) in enumerate(eachcol(allocation[:, 1:n_guests]))
+function calc_room_id_of_guest!(
+    rap::RoomAllocationProblem,
+    allocation::SparseMatrixCSC{Int, Int},
+)
+    for (guest_id, col) in enumerate(eachcol(allocation[:, 1:rap.n_guests]))
         room_id = findfirst(col .> 0)
         if !isnothing(room_id)
-            room_id_of_guest[guest_id] = room_id
+            rap.room_id_of_guest[guest_id] = room_id
         end
     end
-    return room_id_of_guest
+    return nothing
 end
 
-function calc_guest_ids_of_room(
+function calc_guest_ids_of_room!(
+    rap::RoomAllocationProblem,
     allocation::SparseMatrixCSC{Int, Int},
-    n_guests::Int,
-    n_rooms::Int
 )
-    guest_ids_of_room = fill(Vector{Int}(), n_rooms)
-    for (room_id, row) in enumerate(eachrow(allocation[:, 1:n_guests]))
+    for (room_id, row) in enumerate(eachrow(allocation[:, 1:rap.n_guests]))
         guest_ids = findall(row .> 0)
         if !isnothing(guest_ids)
-            guest_ids_of_room[room_id] = guest_ids
+            rap.guest_ids_of_room[room_id] = guest_ids
         end
     end
-    return guest_ids_of_room
+    return nothing
 end
 
-function calc_fulfilled_wishes(wishes::Vector{Wish}, room_id_of_guest::Vector{Int})
-    fulfilled_wishes = zeros(Bool, length(wishes))
-    for (wish_id, wish) in enumerate(wishes)
+function calc_fulfilled_wishes!(rap::RoomAllocationProblem)
+    for (wish_id, wish) in enumerate(rap.wishes)
         guest_ids = wish.guest_ids
         wish_is_fulfilled = false
         friend_counter = 1
-        room_id = room_id_of_guest[guest_ids[1]]
+        room_id = rap.room_id_of_guest[guest_ids[1]]
         for friend_id in guest_ids[2:end]
-            room_id_friend = room_id_of_guest[friend_id]
+            room_id_friend = rap.room_id_of_guest[friend_id]
             if room_id == room_id_friend
                 friend_counter += 1
             end
@@ -464,10 +426,71 @@ function calc_fulfilled_wishes(wishes::Vector{Wish}, room_id_of_guest::Vector{In
         if friend_counter == length(guest_ids)
             wish_is_fulfilled = true
         end
-        fulfilled_wishes[wish_id] = wish_is_fulfilled
+        rap.fulfilled_wishes[wish_id] = wish_is_fulfilled
     end
-    return fulfilled_wishes
+    return nothing
 end
 
-gen_showvalues(fulfilled_wishes, temperature) =
-    () -> [(:fulfilled_wishes, fulfilled_wishes), (:temperature, temperature)]
+function export_wish_overview(file::String, rap::RoomAllocationProblem)
+    open(file, "w") do io
+        println(io, "="^92)
+        println(io, "OVERVIEW OF ALL WISHES")
+        println(io, "="^92)
+        println(io)
+        for (wish_id, wish) in enumerate(rap.wishes)
+            wish_checkmark = rap.fulfilled_wishes[wish_id] ? "✔︎" : "✘"
+            @printf(io, "%s %s (%s):\n", wish_checkmark, wish.mail, wish.gender)
+            for guest_id in wish.guest_ids
+                guest_name = rap.guests[guest_id].name
+                guest_gender = rap.guests[guest_id].gender
+                guest_room_name = rap.rooms[rap.room_id_of_guest[guest_id]].name
+                @printf(io, "    %s (%s) - %s\n", guest_name, guest_gender, guest_room_name)
+            end
+            println(io)
+        end
+    end
+    return nothing
+end
+
+function export_room_overview(file::String, rap::RoomAllocationProblem)
+    open(file, "w") do io
+        println(io, "="^92)
+        println(io, "OVERVIEW OF ALL ROOMS")
+        println(io, "="^92)
+        println(io)
+        for (room_id, room) in enumerate(rap.rooms)
+            @printf(io, "%s (%s, %d beds):\n", room.name, room.gender, room.capacity)
+            guest_ids = rap.guest_ids_of_room[room_id]
+            for (bed_nr, guest_id) in enumerate(guest_ids)
+                guest_name = rap.guests[guest_id].name
+                guest_gender = rap.guests[guest_id].gender
+                @printf(io, "    %d. %s (%s)\n", bed_nr, guest_name, guest_gender)
+            end
+            if length(guest_ids) < room.capacity
+                for bed_nr in range(start=length(guest_ids)+1, stop=room.capacity)
+                    @printf(io, "    %d. ---\n", bed_nr)
+                end
+            end
+            println(io)
+        end
+    end
+    return nothing
+end
+
+function export_guest_overview(file::String, rap::RoomAllocationProblem)
+    open(file, "w") do io
+        println(io, "name; gender; room")
+        for (guest_id, guest) in enumerate(rap.guests)
+            room_name = rap.rooms[rap.room_id_of_guest[guest_id]].name
+            @printf(io, "%s; %s; %s\n", guest.name, guest.gender, room_name)
+        end
+    end
+    return nothing
+end
+
+function export_results(rap::RoomAllocationProblem; dir::String="", prefix="")
+    export_wish_overview(joinpath(dir, prefix, "wishes.txt"), rap)
+    export_room_overview(joinpath(dir, prefix, "rooms.txt"), rap)
+    export_guest_overview(joinpath(dir, prefix, "guests.csv"), rap)
+    return nothing
+end
