@@ -84,7 +84,7 @@ struct RoomAllocationProblem
 end
 
 function Base.show(io::IO, ::MIME"text/plain", rap::RoomAllocationProblem)
-    println(io, rap.n_rooms, "-room ", typeof(r), ":")
+    println(io, rap.n_rooms, "-room ", typeof(rap), ":")
     @printf(io, "  %d beds\n", rap.n_beds)
     @printf(io, "  %d guests\n", rap.n_guests)
     @printf(io, "  %d wishes\n", rap.n_wishes)
@@ -321,7 +321,7 @@ function simulated_annealing!(rap::RoomAllocationProblem;
     β=0.99,
     n_iter=100,
 )
-    printstyled(banner; color=:blue)
+    log_simulated_annealing_init(rap)
     if β >= 1
         error("Infinity-loop: β >= 1. Must be 0 < β < 1")
     end
@@ -526,5 +526,14 @@ function export_results(rap::RoomAllocationProblem; dir::String="", prefix="")
     export_wish_overview(joinpath(dir, prefix, "wishes.txt"), rap)
     export_room_overview(joinpath(dir, prefix, "rooms.txt"), rap)
     export_guest_overview(joinpath(dir, prefix, "guests.csv"), rap)
+    return nothing
+end
+
+function log_simulated_annealing_init(rap::RoomAllocationProblem)
+    printstyled(BANNER; color=:blue)
+    println("-"^92)
+    println("SOLVING A ROOM ALLOCATION PROBLEM WITH SIMULATED ANNEALING")
+    println("-"^92)
+    display(rap)
     return nothing
 end
