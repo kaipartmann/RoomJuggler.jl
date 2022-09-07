@@ -321,7 +321,7 @@ function simulated_annealing!(rap::RoomAllocationProblem;
     β=0.99,
     n_iter=100,
 )
-    log_simulated_annealing_init(rap)
+    log_simulated_annealing_init()
     if β >= 1
         error("Infinity-loop: β >= 1. Must be 0 < β < 1")
     end
@@ -334,38 +334,42 @@ function simulated_annealing!(rap::RoomAllocationProblem;
     n_total_iter = length(temp_history) * n_iter
     happiness_history = zeros(Int, n_total_iter)
     iteration_counter = 0
+    log_simulated_annealing_start(rap, n_total_iter, start_temp, minimum_temp, n_iter)
     p = Progress(n_total_iter;
         dt=1,
-        desc="Running...",
-        barlen=50,
+        desc="Switching guests...",
+        barlen=52,
         color=:normal,
     )
-    for temp in temp_history, _ in 1:n_iter
-        iteration_counter += 1
-        new_allocation = get_new_allocation(current_allocation, rap.n_rooms)
-        new_happiness = calc_happiness(new_allocation, rap.relations)
-        acceptance_probability = calc_acceptance_probability(
-            current_happiness,
-            new_happiness,
-            temp
-        )
-        if acceptance_probability > rand()
-            current_allocation = new_allocation
-            current_happiness = new_happiness
+    elapsed_time = @elapsed begin
+        for temp in temp_history, _ in 1:n_iter
+            iteration_counter += 1
+            new_allocation = get_new_allocation(current_allocation, rap.n_rooms)
+            new_happiness = calc_happiness(new_allocation, rap.relations)
+            acceptance_probability = calc_acceptance_probability(
+                current_happiness,
+                new_happiness,
+                temp
+            )
+            if acceptance_probability > rand()
+                current_allocation = new_allocation
+                current_happiness = new_happiness
+            end
+            happiness_history[iteration_counter] = current_happiness
+            if current_happiness == target_happiness
+                all_wishes_fulfilled = true
+                happiness_history = happiness_history[1:iteration_counter]
+                break
+            end
+            next!(p, showvalues=gen_showvals(iteration_counter, -current_happiness))
         end
-        happiness_history[iteration_counter] = current_happiness
-        if current_happiness == target_happiness
-            all_wishes_fulfilled = true
-            happiness_history = happiness_history[1:iteration_counter]
-            break
-        end
-        next!(p, showvalues=gen_showvals(iteration_counter, -current_happiness))
+        finish!(p)
     end
-    finish!(p)
-    @printf("%.2f %% of wishes fulfilled\n", 100 * current_happiness/target_happiness)
+    @printf("✔︎ simulated annealing completed after %g seconds\n", elapsed_time)
     calc_room_id_of_guest!(rap, current_allocation)
     calc_guest_ids_of_room!(rap, current_allocation)
     calc_fulfilled_wishes!(rap)
+    log_simulated_annealing_results(rap, current_happiness, iteration_counter)
     return happiness_history, temp_history
 end
 
@@ -529,11 +533,72 @@ function export_results(rap::RoomAllocationProblem; dir::String="", prefix="")
     return nothing
 end
 
-function log_simulated_annealing_init(rap::RoomAllocationProblem)
+function log_simulated_annealing_init()
+    printstyled("-"^92 * "\n"; color=:blue)
+    println()
     printstyled(BANNER; color=:blue)
-    println("-"^92)
-    println("SOLVING A ROOM ALLOCATION PROBLEM WITH SIMULATED ANNEALING")
-    println("-"^92)
-    display(rap)
+    printstyled("-"^92 * "\n"; color=:blue)
+    printstyled(
+        "                 SOLVING A ROOM ALLOCATION PROBLEM WITH SIMULATED ANNEALING\n";
+        color=:blue
+    )
+    printstyled("-"^92 * "\n"; color=:blue)
+    msg = "I will now swap guests between two rooms several times and then see if "
+    msg *= "everyone's happiness\nincreases!\n"
+    print(msg)
+    println()
     return nothing
+end
+
+function log_simulated_annealing_start(
+    rap::RoomAllocationProblem,
+    n_total_iter,
+    start_temp,
+    minimum_temp,
+    n_iter,
+)
+    println("ROOM ALLOCATION PROBLEM:")
+    @printf("number of rooms:        %15d\n", rap.n_rooms)
+    @printf("number of beds:         %15d\n", rap.n_beds)
+    @printf("number of guests:       %15d\n", rap.n_guests)
+    @printf("number of wishes:       %15d\n", rap.n_wishes)
+    println()
+    println("SIMULATED ANNEALING PARAMETERS:")
+    @printf("start temperature:      %15g\n", start_temp)
+    @printf("minimum temperature:    %15g\n", minimum_temp)
+    @printf("iterations per temp.:   %15d\n", n_iter)
+    @printf("planned guest switches: %15d\n", n_total_iter)
+    @printf(
+        "maximum happiness:      %15d (if all wishes are fulfilled)\n",
+        rap.max_happiness,
+    )
+    println()
+    return nothing
+end
+
+function log_simulated_annealing_results(
+    rap::RoomAllocationProblem,
+    happiness::Int,
+    n_total_iter::Int,
+)
+    println()
+    @printf("total guest switches:   %15d\n", n_total_iter)
+    @printf("happiness:              %15d\n", abs(happiness))
+    println()
+    if abs(happiness) == rap.max_happiness
+        print("all wishes are fulfilled!")
+        printstyled("      (━☞´◔‿ゝ◔`)━☞    ᕙᓄ(☉ਊ☉)ᓄᕗ\n", color=:blue)
+    else
+        fulfilled_wishes_percent = 100 * abs(happiness) / rap.max_happiness
+        @printf("%.2f %% of all wishes are fulfilled!", fulfilled_wishes_percent)
+        printstyled("      (͡o‿O͡)\n", color=:blue)
+        n_fulfilled_wishes = length(findall(rap.fulfilled_wishes .== true))
+        n_unfulfilled_wishes = length(findall(rap.fulfilled_wishes .== false))
+        @assert rap.n_wishes == n_fulfilled_wishes + n_unfulfilled_wishes
+        @printf("  %d wishes fulfilled\n", n_fulfilled_wishes)
+        @printf("  %d wishes not fulfilled\n", n_unfulfilled_wishes)
+        println()
+        println("increase the number of guest switches and try again!")
+    end
+    println()
 end

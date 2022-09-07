@@ -11,7 +11,7 @@ export Guest, Wish, Room, RoomAllocationProblem, gender_separated_raps
 export simulated_annealing!
 export export_results
 
-const banner = raw"""
+const BANNER = raw"""
             ░▒█░▒█░█▀▀▄░▄▀▀▄░▄▀▀▄░█░░█░▒█▀▀▀█░█▀▄░█░░░░█▀▀░█▀▄░█░▒█░█░░█▀▀░█▀▀▄
             ░▒█▀▀█░█▄▄█░█▄▄█░█▄▄█░█▄▄█░░▀▀▀▄▄░█░░░█▀▀█░█▀▀░█░█░█░▒█░█░░█▀▀░█▄▄▀
             ░▒█░▒█░▀░░▀░█░░░░█░░░░▄▄▄▀░▒█▄▄▄█░▀▀▀░▀░░▀░▀▀▀░▀▀░░░▀▀▀░▀▀░▀▀▀░▀░▀▀
