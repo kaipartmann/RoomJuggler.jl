@@ -527,9 +527,9 @@ function export_guest_overview(file::String, rap::RoomAllocationProblem)
 end
 
 function export_results(rap::RoomAllocationProblem; dir::String="", prefix="")
-    export_wish_overview(joinpath(dir, prefix, "wishes.txt"), rap)
-    export_room_overview(joinpath(dir, prefix, "rooms.txt"), rap)
-    export_guest_overview(joinpath(dir, prefix, "guests.csv"), rap)
+    export_wish_overview(joinpath(dir, prefix*"wishes.txt"), rap)
+    export_room_overview(joinpath(dir, prefix*"rooms.txt"), rap)
+    export_guest_overview(joinpath(dir, prefix*"guests.csv"), rap)
     return nothing
 end
 
