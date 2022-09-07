@@ -43,28 +43,43 @@ for (i, wish) in enumerate(wishes_manually)
 end
 
 ##
-@test_throws ErrorException wishes_mg = HappyScheduler.get_wishes(wishes_mg_file, guests)
 mg_info_file = joinpath(@__DIR__, "data", "mixed_gender_wishes_in_wishes10_mg.txt")
+if isfile(mg_info_file)
+    rm(mg_info_file, force=true)
+end
+@test_throws ErrorException wishes_mg = HappyScheduler.get_wishes(wishes_mg_file, guests)
+@test isfile(mg_info_file)
 mg_info_file_content = read(mg_info_file, String)
 @test occursin("Martha Chung", mg_info_file_content)
 @test occursin("mark.white@test.com", mg_info_file_content)
+rm(mg_info_file, force=true)
 
 ##
-@test_throws ErrorException wishes_mw = HappyScheduler.get_wishes(wishes_mw_file, guests)
 mw_info_file = joinpath(@__DIR__, "data", "multiple_wishes_in_wishes10_mw.txt")
+if isfile(mw_info_file)
+    rm(mw_info_file, force=true)
+end
+@test_throws ErrorException wishes_mw = HappyScheduler.get_wishes(wishes_mw_file, guests)
+@test isfile(mw_info_file)
 mw_info_file_content = read(mw_info_file, String)
 @test occursin("John Kinder", mw_info_file_content)
 @test occursin("mark.white@test.com", mw_info_file_content)
 @test occursin("john.kinder@tmobile.com", mw_info_file_content)
+rm(mw_info_file, force=true)
 
 ##
-@test_throws ErrorException wishes_un = HappyScheduler.get_wishes(wishes_un_file, guests)
 un_info_file = joinpath(@__DIR__, "data", "unknown_guests_in_wishes10_un.txt")
+if isfile(un_info_file)
+    rm(un_info_file, force=true)
+end
+@test_throws ErrorException wishes_un = HappyScheduler.get_wishes(wishes_un_file, guests)
+@test isfile(un_info_file)
 un_info_file_content = read(un_info_file, String)
 @test occursin("Bibi Blocksberg", un_info_file_content)
 @test occursin("John Legend", un_info_file_content)
 @test occursin("co123@web.com", un_info_file_content)
 @test occursin("mark.white@test.com", un_info_file_content)
+rm(un_info_file, force=true)
 
 ##
 rap_f, rap_m = gender_separated_raps(guests_file, wishes_file, rooms_file)
@@ -87,12 +102,6 @@ for (i, guest) in enumerate(guests_f_manually)
 end
 
 ##
-# simulated_annealing!(rap_m;
-#     start_temp=1,
-#     minimum_temp=1e-7,
-#     β=0.999,
-#     n_iter=300,
-# );
 simulated_annealing!(rap_f;
     start_temp=1,
     minimum_temp=1e-7,
