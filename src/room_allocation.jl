@@ -35,6 +35,7 @@ struct RoomAllocationProblem
     n_wishes::Int
     n_rooms::Int
     n_beds::Int
+    max_happiness::Int
     guests::Vector{Guest}
     wishes::Vector{Wish}
     rooms::Vector{Room}
@@ -61,6 +62,7 @@ struct RoomAllocationProblem
             error(msg)
         end
         relations = find_relations(wishes, n_beds)
+        max_happiness = length(findall(!iszero, relations))
         room_id_of_guest = zeros(Int, n_guests)
         guest_ids_of_room = fill(Vector{Int}(), n_rooms)
         fulfilled_wishes = zeros(Bool, n_wishes)
@@ -69,6 +71,7 @@ struct RoomAllocationProblem
             n_wishes,
             n_rooms,
             n_beds,
+            max_happiness,
             guests,
             wishes,
             rooms,
@@ -323,7 +326,7 @@ function simulated_annealing!(rap::RoomAllocationProblem;
         error("Infinity-loop: β >= 1. Must be 0 < β < 1")
     end
     happiness_history = Vector{Float64}()
-    target_happiness = -length(findall(!iszero, rap.relations))
+    target_happiness = -rap.max_happiness
     all_wishes_fulfilled = false
     current_allocation = initialize_allocation(rap)
     current_happiness = calc_happiness(current_allocation, rap.relations)
