@@ -25,6 +25,11 @@ struct Room
     gender::Symbol
 end
 
+function Base.show(io::IO, ::MIME"text/plain", r::Room)
+    println(io, r.capacity, "-person ", typeof(r), " with name: ", r.name)
+    return nothing
+end
+
 struct RoomAllocationProblem
     n_guests::Int
     n_wishes::Int
@@ -73,6 +78,32 @@ struct RoomAllocationProblem
             fulfilled_wishes
         )
     end
+end
+
+function Base.show(io::IO, ::MIME"text/plain", rap::RoomAllocationProblem)
+    println(io, rap.n_rooms, "-room ", typeof(r), ":")
+    @printf(io, "  %d beds\n", rap.n_beds)
+    @printf(io, "  %d guests\n", rap.n_guests)
+    @printf(io, "  %d wishes\n", rap.n_wishes)
+    return nothing
+end
+
+function Base.show(
+    io::IO,
+    ::MIME"text/plain",
+    raps::Tuple{RoomAllocationProblem, RoomAllocationProblem}
+)
+    println(io, typeof(raps), ":")
+    rap_1, rap_2 = raps
+    println(io, "  ", rap_1.n_rooms, "-room ", typeof(rap_1), ":")
+    @printf(io, "    %d beds\n", rap_1.n_beds)
+    @printf(io, "    %d guests\n", rap_1.n_guests)
+    @printf(io, "    %d wishes\n", rap_1.n_wishes)
+    println(io, "  ", rap_2.n_rooms, "-room ", typeof(rap_2), ":")
+    @printf(io, "    %d beds\n", rap_2.n_beds)
+    @printf(io, "    %d guests\n", rap_2.n_guests)
+    @printf(io, "    %d wishes\n", rap_2.n_wishes)
+    return nothing
 end
 
 function RoomAllocationProblem(
