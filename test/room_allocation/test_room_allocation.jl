@@ -1,4 +1,4 @@
-@time using HappyScheduler
+using HappyScheduler
 using Test
 
 ##
@@ -100,6 +100,23 @@ for (i, guest) in enumerate(guests_f_manually)
     @test rap_f.guests[i].name == guest.name
     @test rap_f.guests[i].gender == guest.gender
 end
+@test rap_m.n_guests == 5
+@test rap_m.n_wishes == 1
+@test rap_m.n_rooms == 2
+@test rap_m.n_beds == 7
+@test rap_m.max_happiness == 2
+guests_m_manually = [
+    Guest("John Kinder", :M),
+    Guest("Asa Martell", :M),
+    Guest("Sean Cortez", :M),
+    Guest("Joseph Russell", :M),
+    Guest("Mark White", :M),
+]
+@test length(rap_m.guests) == length(guests_m_manually)
+for (i, guest) in enumerate(guests_m_manually)
+    @test rap_m.guests[i].name == guest.name
+    @test rap_m.guests[i].gender == guest.gender
+end
 
 ##
 simulated_annealing!(rap_f;
@@ -109,3 +126,35 @@ simulated_annealing!(rap_f;
     n_iter=300,
 );
 @test rap_f.fulfilled_wishes == [true]
+@test rap_f.room_id_of_guest[4] == rap_f.room_id_of_guest[2] &&
+      rap_f.room_id_of_guest[2] == rap_f.room_id_of_guest[3]
+for room_id in 1:rap_f.n_rooms
+    guest_ids = rap_f.guest_ids_of_room[room_id]
+    @test length(guest_ids) <= rap_f.rooms[room_id].capacity
+    genders = [g.gender for g in rap_f.guests[guest_ids]]
+    @test allequal(genders)
+end
+for guest_id in 1:rap_f.n_guests
+    room_id = rap_f.room_id_of_guest[guest_id]
+    @test guest_id in rap_f.guest_ids_of_room[room_id]
+end
+
+##
+simulated_annealing!(rap_m;
+    start_temp=1,
+    minimum_temp=1e-7,
+    β=0.999,
+    n_iter=300,
+);
+@test rap_m.fulfilled_wishes == [true]
+@test rap_m.room_id_of_guest[1] == rap_m.room_id_of_guest[5]
+for i in 1:rap_m.n_rooms
+    guest_ids = rap_m.guest_ids_of_room[i]
+    @test length(guest_ids) <= rap_m.rooms[i].capacity
+    genders = [g.gender for g in rap_m.guests[guest_ids]]
+    @test allequal(genders)
+end
+for guest_id in 1:rap_m.n_guests
+    room_id = rap_m.room_id_of_guest[guest_id]
+    @test guest_id in rap_m.guest_ids_of_room[room_id]
+end
