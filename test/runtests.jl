@@ -1,7 +1,3 @@
-using HappyScheduler
-using Test
-using SafeTestsets
+using TestItemRunner
 
-@testset "HappyScheduler.jl" begin
-    @safetestset "RoomAllocation" begin include(joinpath("room_allocation", "test_room_allocation.jl")) end
-end
+@run_package_tests
