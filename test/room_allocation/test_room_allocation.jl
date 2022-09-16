@@ -2,14 +2,6 @@ using HappyScheduler
 using Test
 
 ##
-guests_file = joinpath(@__DIR__, "data", "guests10.csv")
-wishes_file = joinpath(@__DIR__, "data", "wishes10.csv")
-wishes_mg_file = joinpath(@__DIR__, "data", "wishes10_mg.csv") # mixed gender
-wishes_mw_file = joinpath(@__DIR__, "data", "wishes10_mw.csv") # multiple wishes
-wishes_un_file = joinpath(@__DIR__, "data", "wishes10_un.csv") # unknown guest
-rooms_file = joinpath(@__DIR__, "data", "rooms10.csv")
-
-##
 @testitem "guests" begin
     guests_file = joinpath(@__DIR__, "data", "guests10.csv")
     guests = HappyScheduler.get_guests(guests_file)
