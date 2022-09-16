@@ -1,7 +1,3 @@
-using HappyScheduler
-using Test
-
-##
 @testitem "guests" begin
     guests_file = joinpath(@__DIR__, "data", "guests10.csv")
     guests = HappyScheduler.get_guests(guests_file)
@@ -24,7 +20,6 @@ using Test
     end
 end
 
-##
 @testitem "wishes" begin
     guests_file = joinpath(@__DIR__, "data", "guests10.csv")
     guests = HappyScheduler.get_guests(guests_file)
@@ -42,7 +37,6 @@ end
     end
 end
 
-##
 @testitem "mixed gender wishes" begin
     mg_info_file = joinpath(@__DIR__, "data", "mixed_gender_wishes_in_wishes10_mg.txt")
     if isfile(mg_info_file)
@@ -62,7 +56,6 @@ end
     rm(mg_info_file, force=true)
 end
 
-##
 @testitem "multiple wishes per person" begin
     mw_info_file = joinpath(@__DIR__, "data", "multiple_wishes_in_wishes10_mw.txt")
     if isfile(mw_info_file)
@@ -83,7 +76,6 @@ end
     rm(mw_info_file, force=true)
 end
 
-##
 @testitem "unknown guests" begin
     un_info_file = joinpath(@__DIR__, "data", "unknown_guests_in_wishes10_un.txt")
     if isfile(un_info_file)
@@ -105,7 +97,6 @@ end
     rm(un_info_file, force=true)
 end
 
-##
 @testitem "gender separated raps" begin
     guests_file = joinpath(@__DIR__, "data", "guests10.csv")
     wishes_file = joinpath(@__DIR__, "data", "wishes10.csv")
@@ -147,7 +138,6 @@ end
     end
 end
 
-##
 @testitem "simulated annealing" begin
     guests_file = joinpath(@__DIR__, "data", "guests10.csv")
     wishes_file = joinpath(@__DIR__, "data", "wishes10.csv")
