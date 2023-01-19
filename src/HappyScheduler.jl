@@ -7,7 +7,7 @@ using LinearAlgebra
 using StatsBase: sample
 using ProgressMeter
 
-export Guest, Wish, Room, RoomAllocationProblem, gender_separated_raps
+export Guest, Wish, Room, RoomAllocationProblem, get_gwr_split_genders, get_gwr
 export simulated_annealing!
 export export_results
 

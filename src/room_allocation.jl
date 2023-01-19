@@ -91,40 +91,7 @@ function Base.show(io::IO, ::MIME"text/plain", rap::RoomAllocationProblem)
     return nothing
 end
 
-function Base.show(
-    io::IO,
-    ::MIME"text/plain",
-    raps::Tuple{RoomAllocationProblem, RoomAllocationProblem}
-)
-    println(io, typeof(raps), ":")
-    rap_1, rap_2 = raps
-    println(io, "  ", rap_1.n_rooms, "-room ", typeof(rap_1), ":")
-    @printf(io, "    %d beds\n", rap_1.n_beds)
-    @printf(io, "    %d guests\n", rap_1.n_guests)
-    @printf(io, "    %d wishes\n", rap_1.n_wishes)
-    println(io, "  ", rap_2.n_rooms, "-room ", typeof(rap_2), ":")
-    @printf(io, "    %d beds\n", rap_2.n_beds)
-    @printf(io, "    %d guests\n", rap_2.n_guests)
-    @printf(io, "    %d wishes", rap_2.n_wishes)
-    return nothing
-end
-
-function RoomAllocationProblem(
-    guests_file::String,
-    wishes_file::String,
-    rooms_file::String,
-)
-    guests = get_guests(guests_file)
-    wishes = get_wishes(wishes_file, guests)
-    rooms = get_rooms(rooms_file)
-    return RoomAllocationProblem(guests, wishes, rooms)
-end
-
-function gender_separated_raps(
-    guests_file::String,
-    wishes_file::String,
-    rooms_file::String
-)
+function get_gwr_split_genders(guests_file::String, wishes_file::String, rooms_file::String)
     guests = get_guests(guests_file)
     wishes = get_wishes(wishes_file, guests)
     rooms = get_rooms(rooms_file)
@@ -132,9 +99,14 @@ function gender_separated_raps(
     guests_m, wishes_m = filter_genders(guests, wishes, :M)
     rooms_f = filter(x -> x.gender == :F, rooms)
     rooms_m = filter(x -> x.gender == :M, rooms)
-    rap_f = RoomAllocationProblem(guests_f, wishes_f, rooms_f)
-    rap_m = RoomAllocationProblem(guests_m, wishes_m, rooms_m)
-    return rap_f, rap_m
+    return (guests_f, wishes_f, rooms_f), (guests_m, wishes_m, rooms_m)
+end
+
+function get_gwr(guests_file::String, wishes_file::String, rooms_file::String)
+    guests = get_guests(guests_file)
+    wishes = get_wishes(wishes_file, guests)
+    rooms = get_rooms(rooms_file)
+    return guests, wishes, rooms
 end
 
 function get_guests(file::String)
@@ -230,7 +202,8 @@ function get_wishes(file::String, guests::Vector{Guest})
         error(msg)
     end
 
-    mixed_gender_wishes = [wish_id for wish_id in eachindex(wishes) if wishes[wish_id].gender == :MIX]
+    mixed_gender_wishes = [wish_id for wish_id in eachindex(wishes)
+        if wishes[wish_id].gender == :MIX]
     if !isempty(mixed_gender_wishes)
         mixed_gender_wishes_info_file = joinpath(
             dirname(file),
@@ -242,7 +215,10 @@ function get_wishes(file::String, guests::Vector{Guest})
                 println(io)
                 write(io, string("Wish of ", wishes[wish_id].mail), ":\n")
                 for guest_id in wishes[wish_id].guest_ids
-                    write(io, string(guests[guest_id].gender, ", ", guests[guest_id].name, "\n"))
+                    write(
+                        io,
+                        string(guests[guest_id].gender, ", ", guests[guest_id].name, "\n"),
+                    )
                 end
             end
         end
@@ -338,7 +314,7 @@ function simulated_annealing!(rap::RoomAllocationProblem;
     p = Progress(n_total_iter;
         dt=1,
         desc="Switching guests...",
-        barlen=52,
+        barlen=27,
         color=:normal,
     )
     elapsed_time = @elapsed begin
@@ -370,7 +346,7 @@ function simulated_annealing!(rap::RoomAllocationProblem;
     calc_guest_ids_of_room!(rap, current_allocation)
     calc_fulfilled_wishes!(rap)
     log_simulated_annealing_results(rap, current_happiness, iteration_counter)
-    return happiness_history, temp_history
+    return nothing
 end
 
 gen_showvals(iteration, happiness) = ()->[(:iteration, iteration), (:happiness, happiness)]
@@ -471,9 +447,9 @@ end
 
 function export_wish_overview(file::String, rap::RoomAllocationProblem)
     open(file, "w") do io
-        println(io, "="^92)
+        println(io, "="^67)
         println(io, "OVERVIEW OF ALL WISHES")
-        println(io, "="^92)
+        println(io, "="^67)
         println(io)
         for (wish_id, wish) in enumerate(rap.wishes)
             wish_checkmark = rap.fulfilled_wishes[wish_id] ? "✔︎" : "✘"
@@ -492,9 +468,9 @@ end
 
 function export_room_overview(file::String, rap::RoomAllocationProblem)
     open(file, "w") do io
-        println(io, "="^92)
+        println(io, "="^67)
         println(io, "OVERVIEW OF ALL ROOMS")
-        println(io, "="^92)
+        println(io, "="^67)
         println(io)
         for (room_id, room) in enumerate(rap.rooms)
             @printf(io, "%s (%s, %d beds):\n", room.name, room.gender, room.capacity)
@@ -594,5 +570,5 @@ function log_simulated_annealing_results(
         println()
         println("increase the number of guest switches and try again!")
     end
-    println()
+    # println()
 end
