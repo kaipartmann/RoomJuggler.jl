@@ -4,7 +4,7 @@ struct Guest
 end
 
 function Base.show(io::IO, ::MIME"text/plain", g::Guest)
-    println(io, typeof(g), ": ", g.name, " (", g.gender, ")")
+    print(io, typeof(g), ": ", g.name, " (", g.gender, ")")
     return nothing
 end
 
@@ -15,7 +15,7 @@ struct Wish
 end
 
 function Base.show(io::IO, ::MIME"text/plain", w::Wish)
-    println(io, length(w.guest_ids), "-person ", typeof(w), " from ", w.mail)
+    print(io, length(w.guest_ids), "-person ", typeof(w), " from ", w.mail)
     return nothing
 end
 
@@ -26,7 +26,7 @@ struct Room
 end
 
 function Base.show(io::IO, ::MIME"text/plain", r::Room)
-    println(io, r.capacity, "-person ", typeof(r), " with name: ", r.name)
+    print(io, r.capacity, "-person ", typeof(r), " with name: ", r.name)
     return nothing
 end
 
@@ -87,7 +87,7 @@ function Base.show(io::IO, ::MIME"text/plain", rap::RoomAllocationProblem)
     println(io, rap.n_rooms, "-room ", typeof(rap), ":")
     @printf(io, "  %d beds\n", rap.n_beds)
     @printf(io, "  %d guests\n", rap.n_guests)
-    @printf(io, "  %d wishes\n", rap.n_wishes)
+    @printf(io, "  %d wishes", rap.n_wishes)
     return nothing
 end
 
@@ -105,7 +105,7 @@ function Base.show(
     println(io, "  ", rap_2.n_rooms, "-room ", typeof(rap_2), ":")
     @printf(io, "    %d beds\n", rap_2.n_beds)
     @printf(io, "    %d guests\n", rap_2.n_guests)
-    @printf(io, "    %d wishes\n", rap_2.n_wishes)
+    @printf(io, "    %d wishes", rap_2.n_wishes)
     return nothing
 end
 
@@ -534,18 +534,15 @@ function export_results(rap::RoomAllocationProblem; dir::String="", prefix="")
 end
 
 function log_simulated_annealing_init()
-    printstyled("-"^92 * "\n"; color=:blue)
+    printstyled("-"^67 * "\n"; color=:blue)
     println()
     printstyled(BANNER; color=:blue)
-    printstyled("-"^92 * "\n"; color=:blue)
+    printstyled("-"^67 * "\n"; color=:blue)
     printstyled(
-        "                 SOLVING A ROOM ALLOCATION PROBLEM WITH SIMULATED ANNEALING\n";
+        "    SOLVING A ROOM ALLOCATION PROBLEM WITH SIMULATED ANNEALING\n";
         color=:blue
     )
-    printstyled("-"^92 * "\n"; color=:blue)
-    msg = "I will now swap guests between two rooms several times and then see if "
-    msg *= "everyone's happiness\nincreases!\n"
-    print(msg)
+    printstyled("-"^67 * "\n"; color=:blue)
     println()
     return nothing
 end
@@ -568,10 +565,7 @@ function log_simulated_annealing_start(
     @printf("minimum temperature:    %15g\n", minimum_temp)
     @printf("iterations per temp.:   %15d\n", n_iter)
     @printf("planned guest switches: %15d\n", n_total_iter)
-    @printf(
-        "maximum happiness:      %15d (if all wishes are fulfilled)\n",
-        rap.max_happiness,
-    )
+    @printf("maximum happiness:      %15d\n", rap.max_happiness)
     println()
     return nothing
 end
