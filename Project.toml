@@ -15,10 +15,3 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 ProgressMeter = "1"
 StatsBase = "0.33"
 julia = "1.8"
-
-[extras]
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-TestItemRunner = "f8b46487-2199-4994-9208-9a1283c18c0a"
-
-[targets]
-test = ["Test", "TestItemRunner"]
