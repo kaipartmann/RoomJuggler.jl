@@ -46,6 +46,6 @@ function make_wishes(guests_file, wishes_file, mwm=8, mwf=8)
 end
 
 make_wishes(
-    joinpath(@__DIR__, "data","guests1000.csv"),
-    joinpath(@__DIR__, "data", "wishes1000.csv"),
+    joinpath(@__DIR__, "data", "guests300.csv"),
+    joinpath(@__DIR__, "data", "wishes300.csv"),
 )
