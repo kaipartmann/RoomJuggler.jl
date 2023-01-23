@@ -91,6 +91,13 @@ function Base.show(io::IO, ::MIME"text/plain", rap::RoomAllocationProblem)
     return nothing
 end
 
+function get_gwr(guests_file::String, wishes_file::String, rooms_file::String)
+    guests = get_guests(guests_file)
+    wishes = get_wishes(wishes_file, guests)
+    rooms = get_rooms(rooms_file)
+    return guests, wishes, rooms
+end
+
 function get_gwr_split_genders(guests_file::String, wishes_file::String, rooms_file::String)
     guests = get_guests(guests_file)
     wishes = get_wishes(wishes_file, guests)
@@ -100,13 +107,6 @@ function get_gwr_split_genders(guests_file::String, wishes_file::String, rooms_f
     rooms_f = filter(x -> x.gender == :F, rooms)
     rooms_m = filter(x -> x.gender == :M, rooms)
     return (guests_f, wishes_f, rooms_f), (guests_m, wishes_m, rooms_m)
-end
-
-function get_gwr(guests_file::String, wishes_file::String, rooms_file::String)
-    guests = get_guests(guests_file)
-    wishes = get_wishes(wishes_file, guests)
-    rooms = get_rooms(rooms_file)
-    return guests, wishes, rooms
 end
 
 function get_guests(file::String)
