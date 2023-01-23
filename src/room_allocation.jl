@@ -493,10 +493,10 @@ end
 
 function export_guest_overview(file::String, rap::RoomAllocationProblem)
     open(file, "w") do io
-        println(io, "name; gender; room")
+        println(io, "name;gender;room")
         for (guest_id, guest) in enumerate(rap.guests)
             room_name = rap.rooms[rap.room_id_of_guest[guest_id]].name
-            @printf(io, "%s; %s; %s\n", guest.name, guest.gender, room_name)
+            @printf(io, "%s;%s;%s\n", guest.name, guest.gender, room_name)
         end
     end
     return nothing
