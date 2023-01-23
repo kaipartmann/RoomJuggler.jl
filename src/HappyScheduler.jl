@@ -6,6 +6,7 @@ using SparseArrays
 using LinearAlgebra
 using StatsBase: sample
 using ProgressMeter
+using XLSX
 
 export Guest, Wish, Room, RoomAllocationProblem, get_gwr_split_genders, get_gwr
 export simulated_annealing!

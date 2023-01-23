@@ -98,10 +98,15 @@ function get_gwr(guests_file::String, wishes_file::String, rooms_file::String)
     return guests, wishes, rooms
 end
 
-function get_gwr_split_genders(guests_file::String, wishes_file::String, rooms_file::String)
-    guests = get_guests(guests_file)
-    wishes = get_wishes(wishes_file, guests)
-    rooms = get_rooms(rooms_file)
+function get_gwr(xfile::String)
+    guests = get_guests(xfile)
+    wishes = get_wishes(xfile, guests)
+    rooms = get_rooms(xfile)
+    return guests, wishes, rooms
+end
+
+function get_gwr_split_genders(files...)
+    guests, wishes, rooms = get_gwr(files...)
     guests_f, wishes_f = filter_genders(guests, wishes, :F)
     guests_m, wishes_m = filter_genders(guests, wishes, :M)
     rooms_f = filter(x -> x.gender == :F, rooms)
@@ -109,21 +114,48 @@ function get_gwr_split_genders(guests_file::String, wishes_file::String, rooms_f
     return (guests_f, wishes_f, rooms_f), (guests_m, wishes_m, rooms_m)
 end
 
+function get_guests_raw(file::String)
+    if endswith(file, ".csv")
+        guests_raw_, _ = readdlm(file, ';', String; header=true, skipblanks=true)
+        guests_raw = strip.(guests_raw_)
+    elseif endswith(file, ".xlsx")
+        xf = XLSX.readxlsx(file)
+        guests_raw = strip.(string.(xf["guests"][:][begin+1:end, :]))
+    else
+        error("file $file not known!")
+    end
+    return guests_raw
+end
+
 function get_guests(file::String)
-    guests_raw, _ = readdlm(file, ';', String; header=true, skipblanks=true)
+    guests_raw = get_guests_raw(file)
     guests = Vector{Guest}()
     for row in eachrow(guests_raw)
-        name = strip(row[1])
-        gender = Symbol(strip(row[2]))
+        name = row[1]
+        gender = Symbol(row[2])
         push!(guests, Guest(name, gender))
     end
     return guests
 end
 
+function get_wishes_raw(file::String)
+    if endswith(file, ".csv")
+        wishes_raw = strip.(readdlm(file, ';', String; skipblanks=true))
+    elseif endswith(file, ".xlsx")
+        xf = XLSX.readxlsx(file)
+        wishes_raw = xf["wishes"][:]
+        replace!(wishes_raw, missing => "")
+        wishes_raw = convert.(String, wishes_raw)
+    else
+        error("file $file not known!")
+    end
+    return wishes_raw
+end
+
 function get_wishes(file::String, guests::Vector{Guest})
     guest_names = [g.name for g in guests]
     unknown_guests = Dict{Int, Vector{String}}()
-    wishes_raw = strip.(readdlm(file, ';', String; skipblanks=true))
+    wishes_raw = get_wishes_raw(file)
     wishes = Vector{Wish}()
 
     for (wish_id, data) in enumerate(eachrow(wishes_raw))
@@ -249,8 +281,21 @@ function check_for_multiple_wishes(wishes::Vector{Wish}, guests::Vector{Guest})
     return multiple_wishes
 end
 
+function get_rooms_raw(file::String)
+    if endswith(file, ".csv")
+        rooms_raw_, _ = readdlm(file, ';', String; header=true, skipblanks=true)
+        rooms_raw = strip.(rooms_raw_)
+    elseif endswith(file, ".xlsx")
+        xf = XLSX.readxlsx(file)
+        rooms_raw = strip.(string.(xf["rooms"][:][begin+1:end, :]))
+    else
+        error("file $file not known!")
+    end
+    return rooms_raw
+end
+
 function get_rooms(file::String)
-    rooms_raw, _ = readdlm(file, ';', String; header=true, skipblanks=true)
+    rooms_raw = get_rooms_raw(file)
     rooms = Vector{Room}()
     for row in eachrow(rooms_raw)
         name = strip(row[1])
