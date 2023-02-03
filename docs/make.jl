@@ -1,16 +1,16 @@
-using HappyScheduler
+using RoomJuggler
 using Documenter
 
-DocMeta.setdocmeta!(HappyScheduler, :DocTestSetup, :(using HappyScheduler); recursive=true)
+DocMeta.setdocmeta!(RoomJuggler, :DocTestSetup, :(using RoomJuggler); recursive=true)
 
 makedocs(;
-    modules=[HappyScheduler],
+    modules=[RoomJuggler],
     authors="Kai Friebertshäuser",
-    repo="https://github.com/kfrb/HappyScheduler.jl/blob/{commit}{path}#{line}",
-    sitename="HappyScheduler.jl",
+    repo="https://github.com/kfrb/RoomJuggler.jl/blob/{commit}{path}#{line}",
+    sitename="RoomJuggler.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://kfrb.github.io/HappyScheduler.jl",
+        canonical="https://kfrb.github.io/RoomJuggler.jl",
         edit_link="main",
         assets=String[],
     ),
@@ -20,6 +20,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/kfrb/HappyScheduler.jl",
+    repo="github.com/kfrb/RoomJuggler.jl",
     devbranch="main",
 )

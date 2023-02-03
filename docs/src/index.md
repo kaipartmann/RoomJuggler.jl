@@ -1,14 +1,14 @@
 ```@meta
-CurrentModule = HappyScheduler
+CurrentModule = RoomJuggler
 ```
 
-# HappyScheduler
+# RoomJuggler
 
-Documentation for [HappyScheduler](https://github.com/kfrb/HappyScheduler.jl).
+Documentation for [RoomJuggler](https://github.com/kfrb/RoomJuggler.jl).
 
 ```@index
 ```
 
 ```@autodocs
-Modules = [HappyScheduler]
+Modules = [RoomJuggler]
 ```

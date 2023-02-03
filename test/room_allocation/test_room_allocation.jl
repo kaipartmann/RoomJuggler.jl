@@ -1,7 +1,7 @@
 @testitem "guests" begin
-    using HappyScheduler
+    using RoomJuggler
     guests_file = joinpath(@__DIR__, "data", "guests10.csv")
-    guests = HappyScheduler.get_guests(guests_file)
+    guests = RoomJuggler.get_guests(guests_file)
     guests_manually = [
         Guest("Martha Chung", :F),
         Guest("John Kinder", :M),
@@ -21,14 +21,14 @@
     end
     io = IOBuffer()
     show(IOContext(io), "text/plain", guests_manually[1])
-    @test String(take!(io)) == "HappyScheduler.Guest: Martha Chung (F)"
+    @test String(take!(io)) == "RoomJuggler.Guest: Martha Chung (F)"
 end
 
 @testitem "wishes" begin
     guests_file = joinpath(@__DIR__, "data", "guests10.csv")
-    guests = HappyScheduler.get_guests(guests_file)
+    guests = RoomJuggler.get_guests(guests_file)
     wishes_file = joinpath(@__DIR__, "data", "wishes10.csv")
-    wishes = HappyScheduler.get_wishes(wishes_file, guests)
+    wishes = RoomJuggler.get_wishes(wishes_file, guests)
     wishes_manually = [
         Wish("mark.white@test.com", [9, 2], :M),
         Wish("co123@web.com", [7, 3, 5], :F),
@@ -41,7 +41,7 @@ end
     end
     io = IOBuffer()
     show(IOContext(io), "text/plain", wishes_manually[1])
-    @test String(take!(io)) == "2-person HappyScheduler.Wish from mark.white@test.com"
+    @test String(take!(io)) == "2-person RoomJuggler.Wish from mark.white@test.com"
 end
 
 @testitem "mixed gender wishes" begin
@@ -50,9 +50,9 @@ end
         rm(mg_info_file, force=true)
     end
     guests_file = joinpath(@__DIR__, "data", "guests10.csv")
-    guests = HappyScheduler.get_guests(guests_file)
+    guests = RoomJuggler.get_guests(guests_file)
     wishes_mg_file = joinpath(@__DIR__, "data", "wishes10_mg.csv") # mixed gender
-    @test_throws ErrorException wishes_mg = HappyScheduler.get_wishes(
+    @test_throws ErrorException wishes_mg = RoomJuggler.get_wishes(
         wishes_mg_file,
         guests,
     )
@@ -69,9 +69,9 @@ end
         rm(mw_info_file, force=true)
     end
     guests_file = joinpath(@__DIR__, "data", "guests10.csv")
-    guests = HappyScheduler.get_guests(guests_file)
+    guests = RoomJuggler.get_guests(guests_file)
     wishes_mw_file = joinpath(@__DIR__, "data", "wishes10_mw.csv") # multiple wishes
-    @test_throws ErrorException wishes_mw = HappyScheduler.get_wishes(
+    @test_throws ErrorException wishes_mw = RoomJuggler.get_wishes(
         wishes_mw_file,
         guests,
     )
@@ -89,9 +89,9 @@ end
         rm(un_info_file, force=true)
     end
     guests_file = joinpath(@__DIR__, "data", "guests10.csv")
-    guests = HappyScheduler.get_guests(guests_file)
+    guests = RoomJuggler.get_guests(guests_file)
     wishes_un_file = joinpath(@__DIR__, "data", "wishes10_un.csv") # unknown guest
-    @test_throws ErrorException wishes_un = HappyScheduler.get_wishes(
+    @test_throws ErrorException wishes_un = RoomJuggler.get_wishes(
         wishes_un_file,
         guests,
     )
@@ -106,7 +106,7 @@ end
 
 @testitem "rooms" begin
     rooms_file = joinpath(@__DIR__, "data", "rooms10.csv")
-    rooms = HappyScheduler.get_rooms(rooms_file)
+    rooms = RoomJuggler.get_rooms(rooms_file)
     rooms_manually = [
         Room("room 1", 3, :F),
         Room("room 2", 4, :F),
@@ -121,7 +121,7 @@ end
     end
     io = IOBuffer()
     show(IOContext(io), "text/plain", rooms_manually[1])
-    @test String(take!(io)) == "3-person HappyScheduler.Room with name: room 1"
+    @test String(take!(io)) == "3-person RoomJuggler.Room with name: room 1"
 end
 
 @testitem "not enough beds" begin
@@ -168,7 +168,7 @@ end
     end
     io = IOBuffer()
     show(IOContext(io), "text/plain", rapf)
-    @test String(take!(io)) == "2-room HappyScheduler.RoomAllocationProblem:" *
+    @test String(take!(io)) == "2-room RoomJuggler.RoomAllocationProblem:" *
         "\n  7 beds\n  5 guests\n  1 wishes"
     rapm = RoomAllocationProblem(gwrm...)
     @test rapm.n_guests == 5
@@ -190,7 +190,7 @@ end
     end
     io = IOBuffer()
     show(IOContext(io), "text/plain", rapm)
-    @test String(take!(io)) == "2-room HappyScheduler.RoomAllocationProblem:" *
+    @test String(take!(io)) == "2-room RoomJuggler.RoomAllocationProblem:" *
         "\n  7 beds\n  5 guests\n  1 wishes"
 end
 

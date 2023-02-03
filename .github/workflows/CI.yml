@@ -54,6 +54,6 @@ jobs:
       - run: |
           julia --project=docs -e '
             using Documenter: DocMeta, doctest
-            using HappyScheduler
-            DocMeta.setdocmeta!(HappyScheduler, :DocTestSetup, :(using HappyScheduler); recursive=true)
-            doctest(HappyScheduler)'
+            using RoomJuggler
+            DocMeta.setdocmeta!(RoomJuggler, :DocTestSetup, :(using RoomJuggler); recursive=true)
+            doctest(RoomJuggler)'

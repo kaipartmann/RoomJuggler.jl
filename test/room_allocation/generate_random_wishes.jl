@@ -1,4 +1,4 @@
-using HappyScheduler
+using RoomJuggler
 using DelimitedFiles
 using Random
 
@@ -29,7 +29,7 @@ function get_random_wishes(guests, max_wish_size::Int=8)
 end
 
 function make_wishes(guests_file, wishes_file, mwm=8, mwf=8)
-    guests = HappyScheduler.get_guests(guests_file)
+    guests = RoomJuggler.get_guests(guests_file)
     Fwishes = get_random_wishes(filter(x -> x.gender == :F, guests), mwf)
     Mwishes = get_random_wishes(filter(x -> x.gender == :M, guests), mwm)
     open(wishes_file, "w") do io
@@ -46,6 +46,6 @@ function make_wishes(guests_file, wishes_file, mwm=8, mwf=8)
 end
 
 make_wishes(
-    joinpath(@__DIR__, "data", "guests300.csv"),
-    joinpath(@__DIR__, "data", "wishes300.csv"),
+    joinpath(@__DIR__, "data", "guests1000.csv"),
+    joinpath(@__DIR__, "data", "wishes1000.csv"),
 )
