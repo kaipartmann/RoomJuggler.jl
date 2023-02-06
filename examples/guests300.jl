@@ -1,15 +1,18 @@
-using HappyScheduler
+using RoomJuggler
 
-guests = joinpath(@__DIR__, "guests300.csv")
-wishes = joinpath(@__DIR__, "wishes300.csv")
-rooms = joinpath(@__DIR__, "rooms300.csv")
+# the files "guests300.csv", "wishes300.csv", "rooms300.csv"
+# need to be in the same directory as the julia process is started!
+rjj = RoomJugglerJob("guests300.csv", "wishes300.csv", "rooms300.csv")
 
-gwrf, gwrm = get_gwr_split_genders(guests, wishes, rooms)
+# if this is not getting all wishes fulfilled, uncomment the line below
+# to use custom settings for juggling
+juggle!(rjj)
+# juggle!(rjj; config=JuggleConfig(n_iter=400, beta=0.9999, t_0=1, t_min=1e-8))
 
-rapf = RoomAllocationProblem(gwrf...)
-simulated_annealing!(rapf; start_temp=1, minimum_temp=1e-7, β=0.999, n_iter=300)
-export_results(rapf; dir=@__DIR__, prefix="results_f_")
-
-rapm = RoomAllocationProblem(gwrm...)
-simulated_annealing!(rapm; start_temp=1, minimum_temp=1e-7, β=0.999, n_iter=300)
-export_results(rapm; dir=@__DIR__, prefix="results_m_")
+# exports "guests.csv" and the "report.txt"
+#   guests.csv -> all guests and their rooms
+#   report.txt -> overview of all wishes and all rooms
+export_results("results", rjj)
+# if the directory "results" exist, use
+# export_results("results", rjj; force=true)
+# to overwrite the existing files
