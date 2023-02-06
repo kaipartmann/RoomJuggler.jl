@@ -1,24 +1,26 @@
 module RoomJuggler
 
-using DelimitedFiles
+# using DelimitedFiles
+using CSV
 using Printf
 using SparseArrays
 using LinearAlgebra
 using StatsBase: sample
 using ProgressMeter
-using XLSX
 
-export Guest, Wish, Room, RoomAllocationProblem, get_gwr_split_genders, get_gwr
-export simulated_annealing!
+export Guest, Wish, Room, RoomJugglerJob, JuggleConfig
+export juggle!
 export export_results
 
 const BANNER = raw"""
-░▒█▀▀▄░▄▀▀▄░▄▀▀▄░█▀▄▀█░░░░▒█░█░▒█░█▀▀▀░█▀▀▀░█░░█▀▀░█▀▀▄
-░▒█▄▄▀░█░░█░█░░█░█░▀░█░░░░▒█░█░▒█░█░▀▄░█░▀▄░█░░█▀▀░█▄▄▀
-░▒█░▒█░░▀▀░░░▀▀░░▀░░▒▀░▒█▄▄█░░▀▀▀░▀▀▀▀░▀▀▀▀░▀▀░▀▀▀░▀░▀▀
-
+      ░▒█▀▀▄░▄▀▀▄░▄▀▀▄░█▀▄▀█░░░░▒█░█░▒█░█▀▀▀░█▀▀▀░█░░█▀▀░█▀▀▄
+      ░▒█▄▄▀░█░░█░█░░█░█░▀░█░░░░▒█░█░▒█░█░▀▄░█░▀▄░█░░█▀▀░█▄▄▀
+      ░▒█░▒█░░▀▀░░░▀▀░░▀░░▒▀░▒█▄▄█░░▀▀▀░▀▀▀▀░▀▀▀▀░▀▀░▀▀▀░▀░▀▀
 """
 
-include("room_allocation.jl")
+include("types.jl")
+include("data_import.jl")
+include("juggling.jl")
+include("io.jl")
 
 end
