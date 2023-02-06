@@ -74,6 +74,7 @@ function get_wishes(file::String, guests::Vector{Guest})
         else
             mixed_gender_wish_errorflag = true
             @error "mixed gender wish found:" guests_in_wish
+            gender = :mixed
         end
 
         # create Wish instance

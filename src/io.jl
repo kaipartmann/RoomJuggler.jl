@@ -1,3 +1,9 @@
+const BANNER = raw"""
+      ░▒█▀▀▄░▄▀▀▄░▄▀▀▄░█▀▄▀█░░░░▒█░█░▒█░█▀▀▀░█▀▀▀░█░░█▀▀░█▀▀▄
+      ░▒█▄▄▀░█░░█░█░░█░█░▀░█░░░░▒█░█░▒█░█░▀▄░█░▀▄░█░░█▀▀░█▄▄▀
+      ░▒█░▒█░░▀▀░░░▀▀░░▀░░▒▀░▒█▄▄█░░▀▀▀░▀▀▀▀░▀▀▀▀░▀▀░▀▀▀░▀░▀▀
+"""
+
 function log_init()
     printstyled("-"^67 * "\n"; color=:blue, bold=true)
     println()
@@ -30,14 +36,11 @@ function log_results(rop::RoomOccupancyProblem, happiness::Int, n_total_iter::In
     else
         fulfilled_wishes_percent = 100 * abs(happiness) / rop.max_happiness
         @printf("%.2f %% of all wishes are fulfilled!", fulfilled_wishes_percent)
-        printstyled("      (͡o‿O͡)\n", color=:blue)
-        n_fulfilled_wishes = length(findall(rop.fulfilled_wishes .== true))
-        n_unfulfilled_wishes = length(findall(rop.fulfilled_wishes .== false))
-        @assert rop.n_wishes == n_fulfilled_wishes + n_unfulfilled_wishes
-        @printf("  %d wishes fulfilled\n", n_fulfilled_wishes)
-        @printf("  %d wishes not fulfilled\n", n_unfulfilled_wishes)
-        println()
-        println("adjust the parameters in JuggleConfig and try again!")
+        printstyled("      (͡o‿O͡)\n\n", color=:blue)
+        printstyled("adjust the parameters in JuggleConfig and try again!\n";
+            color=:red,
+            bold=true,
+        )
     end
 end
 

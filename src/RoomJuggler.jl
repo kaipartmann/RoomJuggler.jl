@@ -7,16 +7,11 @@ using SparseArrays
 using LinearAlgebra
 using StatsBase: sample
 using ProgressMeter
+using Logging
 
 export Guest, Wish, Room, RoomJugglerJob, JuggleConfig
 export juggle!
 export export_results
-
-const BANNER = raw"""
-      ░▒█▀▀▄░▄▀▀▄░▄▀▀▄░█▀▄▀█░░░░▒█░█░▒█░█▀▀▀░█▀▀▀░█░░█▀▀░█▀▀▄
-      ░▒█▄▄▀░█░░█░█░░█░█░▀░█░░░░▒█░█░▒█░█░▀▄░█░▀▄░█░░█▀▀░█▄▄▀
-      ░▒█░▒█░░▀▀░░░▀▀░░▀░░▒▀░▒█▄▄█░░▀▀▀░▀▀▀▀░▀▀▀▀░▀▀░▀▀▀░▀░▀▀
-"""
 
 include("types.jl")
 include("data_import.jl")
