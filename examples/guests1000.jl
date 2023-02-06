@@ -1,8 +1,8 @@
-@time using RoomJuggler
+using RoomJuggler
 
-guests = joinpath(@__DIR__, "guests300.csv")
-wishes = joinpath(@__DIR__, "wishes300.csv")
-rooms = joinpath(@__DIR__, "rooms300.csv")
+guests = joinpath(@__DIR__, "guests1000.csv")
+wishes = joinpath(@__DIR__, "wishes1000.csv")
+rooms = joinpath(@__DIR__, "rooms1040.csv")
 gwrf, gwrm = get_gwr_split_genders(guests, wishes, rooms)
 
 xfile = joinpath(@__DIR__, "TemplateRoomJuggler.xlsx")

@@ -43,4 +43,4 @@ function defaultdist(sz::Int, nc::Int)
     end
 end
 
-generate_random_rooms(300)
+generate_random_rooms(1040)
