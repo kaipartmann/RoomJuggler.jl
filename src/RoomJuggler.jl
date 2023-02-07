@@ -1,12 +1,11 @@
 module RoomJuggler
 
-# using DelimitedFiles
-using CSV
 using Printf
 using SparseArrays
 using LinearAlgebra
 using StatsBase: sample
 using ProgressMeter
+using XLSX
 using Logging
 
 export Guest, Wish, Room, RoomJugglerJob, JuggleConfig
