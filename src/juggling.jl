@@ -13,7 +13,8 @@ function juggle!(rjj::RoomJugglerJob; config=JuggleConfig())
         config_m = config[2]
         juggle_rop!(rjj.ropm, config_m)
     else
-        error("config not correctly specified!")
+        error("Keyword config must be of type JuggleConfig or Tuple{JuggleConfig, " *
+            "JuggleConfig}!")
     end
     return nothing
 end

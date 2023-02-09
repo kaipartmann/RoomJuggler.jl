@@ -90,6 +90,63 @@ end
     @test String(take!(io)) == "RoomJuggler.Guest: Martha Chung (F)"
 end
 
+@testitem "get_guests not enough columns" begin
+    guests_raw = ["Asa Martell";"Barbara Brown";"Sean Cortez";"Catherine Owens";;]
+    err_msg = "Not enough columns with data! Sheet `guests` needs to contain the guest " *
+        "names in one column and the guest genders another column!"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_guests(guests_raw)
+end
+
+@testitem "get_guests no header name" begin
+    guests_raw = [
+        "NamesWrong" "gender"
+        "Asa Martell" "F"
+        "Barbara Brown" "F"
+        "Sean Cortez" "M"
+        "Catherine Owens" "F"
+    ]
+    err_msg = "First cell in first column of sheet `guests` should contain the names and" *
+        " the header `name`, instead contains: `NamesWrong`"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_guests(guests_raw)
+end
+
+@testitem "get_guests no header gender" begin
+    guests_raw = [
+        "name" "WrongGenderHeader"
+        "Asa Martell" "F"
+        "Barbara Brown" "F"
+        "Sean Cortez" "M"
+        "Catherine Owens" "F"
+    ]
+    err_msg = "First cell in second column of sheet `guests` should contain the genders " *
+        "and the header `gender`, instead contains: `WrongGenderHeader`"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_guests(guests_raw)
+end
+
+@testitem "get_guests missing value" begin
+    guests_raw = [
+        "name" "gender"
+        "Asa Martell" "F"
+        "" "F"
+        "Sean Cortez" "M"
+        "Catherine Owens" "F"
+    ]
+    err_msg = "Missing value in sheet `guests`, guest number 2:\n  name = ❓\n  gender = F"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_guests(guests_raw)
+end
+
+@testitem "get_guests duplicates" begin
+    guests_raw = [
+        "name" "gender"
+        "Asa Martell" "F"
+        "Asa Martell" "F"
+        "Sean Cortez" "M"
+        "Catherine Owens" "F"
+    ]
+    err_msg = "Guest duplicates found!"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_guests(guests_raw)
+end
+
 @testitem "wishes" begin
     job_file = joinpath(@__DIR__, "data", "job10.xlsx")
     guests_raw, wishes_raw, rooms_raw = RoomJuggler.get_raw_data(job_file)

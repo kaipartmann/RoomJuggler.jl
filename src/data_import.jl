@@ -36,14 +36,14 @@ function get_guests(guests_raw::Matrix{String})
 
     # first column should contain the names and the header `name`
     if  guests_raw[begin, begin] !== "name"
-        error("First column should contain the names and the header `name`, instead ",
-            "contains: `", guests_raw[begin, begin], "`")
+        error("First cell in first column of sheet `guests` should contain the names and",
+            " the header `name`, instead contains: `", guests_raw[begin, begin], "`")
     end
 
     # second column should contain the genders and the header `gender`
     if guests_raw[begin, begin+1] !== "gender"
-        error("Second column should contain the genders and the header `gender`, instead ",
-            "contains: `", guests_raw[begin, begin+1], "`")
+        error("First cell in second column of sheet `guests` should contain the genders ",
+            "and the header `gender`, instead contains: `", guests_raw[begin, begin+1], "`")
     end
 
     # cut the header
@@ -163,40 +163,26 @@ function get_rooms(rooms_raw::Matrix{String})
     # error if not enough columns in rooms_raw
     if size(rooms_raw, 2) < 3
         error("Not enough columns with data! Sheet `rooms` needs to contain the room " *
-            "names in column A, room capacity in column B and guest genders in column C!")
+            "names in one column, room capacity (number of beds) in one column and the " *
+            "guest genders in one column!")
     end
 
     # first column should contain the names and the heading `name`
     if rooms_raw[begin, begin] !== "name"
-        error_msg = string(
-            "Sheet `rooms` needs to contain the guest names in column A!\n",
-            "Checked cell A1, should contain `name`, instead contains: `",
-            rooms_raw[begin, begin],
-            "`",
-        )
-        error(error_msg)
+        error("First cell in first column of sheet `rooms` should contain the name and",
+            "the header `name`, instead contains: `", rooms_raw[begin, begin], "`")
     end
 
     # second column should contain the room capacity and the heading `capacity`
     if rooms_raw[begin, begin+1] !== "capacity"
-        error_msg = string(
-            "Sheet `rooms` needs to contain the room capacity in column B!\n",
-            "Checked cell B1, should contain `capacity`, instead contains: `",
-            rooms_raw[begin, begin+1],
-            "`",
-        )
-        error(error_msg)
+        error("First cell in second column of sheet `rooms` should contain the capacity and",
+            "the header `capacity`, instead contains: `", rooms_raw[begin, begin+1], "`")
     end
 
     # third column should contain the room gender and the heading `gender`
     if rooms_raw[begin, begin+2] !== "gender"
-        error_msg = string(
-            "Sheet `rooms` needs to contain the room capacity in column B!\n",
-            "Checked cell C1, should contain `gender`, instead contains: `",
-            rooms_raw[begin, begin+2],
-            "`",
-        )
-        error(error_msg)
+        error("First cell in third column of sheet `rooms` should contain the room gender",
+            "and the header `gender`, instead contains: `", rooms_raw[begin, begin+2], "`")
     end
 
     # cut the header
@@ -221,10 +207,10 @@ function get_rooms(rooms_raw::Matrix{String})
         # only one or two values are missing
         elseif missing_value_check in (1, 2)
             error_msg = string(
-                "Inconsistent missing values in row $(i)!",
-                "\n  name = ", name,
-                "\n  capacity = ", capacity,
-                "\n  gender = ", gender
+                "Inconsistent missing values in sheet `rooms`, room number ", i, ":",
+                "\n  name = ", isempty(name) ? "❓" : name,
+                "\n  capacity = ", isempty(capacity) ? "❓" : capacity,
+                "\n  gender = ", isempty(gender) ? "❓" : gender
             )
             error(error_msg)
         end

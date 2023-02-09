@@ -10,7 +10,7 @@ using Logging
 
 export Guest, Wish, Room, RoomJugglerJob, JuggleConfig
 export juggle!
-export export_results
+export report
 
 include("types.jl")
 include("data_import.jl")
