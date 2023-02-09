@@ -1,8 +1,6 @@
 @testitem "juggle!" begin
-    g = joinpath(@__DIR__, "data", "guests10.csv")
-    w = joinpath(@__DIR__, "data", "wishes10.csv")
-    r = joinpath(@__DIR__, "data", "rooms10.csv")
-    rjj = RoomJugglerJob(g, w, r)
+    job_file = joinpath(@__DIR__, "data", "job10.xlsx")
+    rjj = RoomJugglerJob(job_file)
     juggle!(rjj)
     @test rjj.ropf.fulfilled_wishes == [true]
     @test rjj.ropf.room_id_of_guest[4] == rjj.ropf.room_id_of_guest[2] &&
@@ -41,10 +39,8 @@
 end
 
 @testitem "not fulfillable wishes" begin
-    g = joinpath(@__DIR__, "data", "guests10.csv")
-    w = joinpath(@__DIR__, "data", "wishes10_nfw.csv")
-    r = joinpath(@__DIR__, "data", "rooms10.csv")
-    rjj = RoomJugglerJob(g, w, r)
+    job_file = joinpath(@__DIR__, "data", "job10_nfw.xlsx")
+    rjj = RoomJugglerJob(job_file)
     juggle!(rjj; config=JuggleConfig(beta=0.8, n_iter=10))
     @test rjj.ropf.fulfilled_wishes == [false]
 end

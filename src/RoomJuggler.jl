@@ -16,5 +16,6 @@ include("types.jl")
 include("data_import.jl")
 include("juggling.jl")
 include("io.jl")
+include("utility.jl")
 
 end
