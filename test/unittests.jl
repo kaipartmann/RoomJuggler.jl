@@ -454,7 +454,7 @@ end
     show(IOContext(io), "text/plain", rjj)
     @test String(take!(io)) == "RoomJuggler.RoomJugglerJob:\n4 rooms\n  2 females\n  2 " *
         "males\n14 beds\n  7 females\n  7 males\n10 guests\n  5 females\n  5 males\n2 " *
-        "wishes\n  1 females\n  1 males\n"
+        "wishes\n  1 females\n  1 males"
 end
 
 @testitem "JuggleConfig" begin
