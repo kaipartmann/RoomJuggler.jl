@@ -167,6 +167,69 @@ end
     @test String(take!(io)) == "2-person RoomJuggler.Wish from mark.white@test.com"
 end
 
+@testitem "wishes not enough columns" begin
+    guests = [Guest("Martha Chung", :F)]
+    wishes_raw = [
+        "mark.white@test.com"  "Mark White"
+        "co123@web.com"        "Catherine Owens"
+    ]
+    err_msg = "Not enough columns with data! Sheet `wishes` needs to contain the e-mail " *
+        "the wish was sent with and the friends in the other columns!"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_wishes(wishes_raw, guests)
+end
+
+@testitem "wishes no email in wish 1" begin
+    guests = [Guest("Martha Chung", :F)]
+    wishes_raw = [
+        ""  "Mark White"       "John Kinder"  ""
+    ]
+    err_msg = "No e-mail in wish number 1 found!"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_wishes(wishes_raw, guests)
+end
+
+@testitem "wishes no email in wish 2" begin
+    guests = [
+        Guest("Martha Chung", :F),
+        Guest("John Kinder", :M),
+        Guest("Cami Horton", :F),
+        Guest("Asa Martell", :M),
+        Guest("Barbara Brown", :F),
+        Guest("Sean Cortez", :M),
+        Guest("Catherine Owens", :F),
+        Guest("Joseph Russell", :M),
+        Guest("Mark White", :M),
+        Guest("Kylie Green", :F),
+    ]
+    wishes_raw = [
+        "mark.white@test.com"  "Mark White"       "John Kinder"  ""
+        ""        "Catherine Owens"  "Cami Horton"  "Barbara Brown"
+    ]
+    err_msg = "No e-mail in wish number 2 found!"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_wishes(wishes_raw, guests)
+end
+
+@testitem "wishes not enough friends" begin
+    guests = [
+        Guest("Martha Chung", :F),
+        Guest("John Kinder", :M),
+        Guest("Cami Horton", :F),
+        Guest("Asa Martell", :M),
+        Guest("Barbara Brown", :F),
+        Guest("Sean Cortez", :M),
+        Guest("Catherine Owens", :F),
+        Guest("Joseph Russell", :M),
+        Guest("Mark White", :M),
+        Guest("Kylie Green", :F),
+    ]
+    wishes_raw = [
+        "mark.white@test.com"  "Mark White"       ""  ""
+        "co123@web.com"        "Catherine Owens"  "Cami Horton"  "Barbara Brown"
+    ]
+    err_msg = "A wish needs to contain at least 2 friends!" *
+        "\n  See e-mail: mark.white@test.com"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_wishes(wishes_raw, guests)
+end
+
 @testitem "mixed gender wishes" begin
     job_file = joinpath(@__DIR__, "data", "job10_mg.xlsx")
     guests_raw, wishes_raw, _ = RoomJuggler.get_raw_data(job_file)
@@ -182,7 +245,7 @@ end
     job_file = joinpath(@__DIR__, "data", "job10_mw.xlsx")
     guests_raw, wishes_raw, _ = RoomJuggler.get_raw_data(job_file)
     guests = RoomJuggler.get_guests(guests_raw)
-    err_msg = "Guest John Kinder occurs in multiple wishes! \n  " *
+    err_msg = "Guest John Kinder occurs in multiple wishes!\n  " *
         "e-mails: [\"mark.white@test.com\", \"john.kinder@tmobile.com\"]"
     err = ErrorException(err_msg)
     @test_throws err wishes_mg = RoomJuggler.get_wishes(wishes_raw, guests)
@@ -195,6 +258,50 @@ end
     err_msg = "Unknown guest in wish:\n  e-mail: mark.white@test.com\n  name: John Legend"
     err = ErrorException(err_msg)
     @test_throws err wishes_mg = RoomJuggler.get_wishes(wishes_raw, guests)
+end
+
+@testitem "unknown guests manually" begin
+    guests = [
+        Guest("Martha Chung", :F),
+        Guest("John Kinder", :M),
+        Guest("Cami Horton", :F),
+        Guest("Asa Martell", :M),
+        Guest("Barbara Brown", :F),
+        Guest("Sean Cortez", :M),
+        Guest("Catherine Owens", :F),
+        Guest("Joseph Russell", :M),
+        Guest("Mark White", :M),
+        Guest("Kylie Green", :F),
+    ]
+    wishes_raw = [
+        "mark.white@test.com"  "Mark White"       "Tony Stark"  ""
+        "co123@web.com"        "Catherine Owens"  "Cami Horton"  "Barbara Brown"
+    ]
+    err_msg = "Unknown guest in wish:\n  e-mail: mark.white@test.com\n  name: Tony Stark"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_wishes(wishes_raw, guests)
+end
+
+@testitem "multiple wishes manually" begin
+    guests = [
+        Guest("Martha Chung", :F),
+        Guest("John Kinder", :M),
+        Guest("Cami Horton", :F),
+        Guest("Asa Martell", :M),
+        Guest("Barbara Brown", :F),
+        Guest("Sean Cortez", :M),
+        Guest("Catherine Owens", :F),
+        Guest("Joseph Russell", :M),
+        Guest("Mark White", :M),
+        Guest("Kylie Green", :F),
+    ]
+    wishes_raw = [
+        "mark.white@test.com"  "Mark White"       "John Kinder"  ""
+        "mark.white2@test.com"  "Mark White"       "Sean Cortez"  ""
+        "co123@web.com"        "Catherine Owens"  "Cami Horton"  "Barbara Brown"
+    ]
+    err_msg = "Guest Mark White occurs in multiple wishes!\n  " *
+        "e-mails: [\"mark.white@test.com\", \"mark.white2@test.com\"]"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_wishes(wishes_raw, guests)
 end
 
 @testitem "rooms" begin
@@ -216,6 +323,83 @@ end
     io = IOBuffer()
     show(IOContext(io), "text/plain", rooms_manually[1])
     @test String(take!(io)) == "3-person RoomJuggler.Room room 1 (F)"
+end
+
+@testitem "rooms not enough columns" begin
+    rooms_raw = [
+        "name" "capacity"
+        "room 1" "5"
+        "room 2" "4"
+    ]
+    err_msg = "Not enough columns with data! Sheet `rooms` needs to contain the room " *
+        "names in one column, room capacity (number of beds) in one column and the " *
+        "guest genders in one column!"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_rooms(rooms_raw)
+end
+
+@testitem "rooms wrong header name" begin
+    rooms_raw = [
+        "NameWrong"    "capacity"  "gender"
+        "room 1"  "3"         "F"
+        "room 2"  "4"         "F"
+        "room 3"  "2"         "M"
+        "room 4"  "5"         "M"
+    ]
+    err_msg = "First cell in first column of sheet `rooms` should contain the name and" *
+        "the header `name`, instead contains: `NameWrong`"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_rooms(rooms_raw)
+end
+
+@testitem "rooms wrong header capacity" begin
+    rooms_raw = [
+        "name"    "CapacityWrong"  "gender"
+        "room 1"  "3"         "F"
+        "room 2"  "4"         "F"
+        "room 3"  "2"         "M"
+        "room 4"  "5"         "M"
+    ]
+    err_msg = "First cell in second column of sheet `rooms` should contain the capacity " *
+        "and the header `capacity`, instead contains: `CapacityWrong`"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_rooms(rooms_raw)
+end
+
+@testitem "rooms wrong header gender" begin
+    rooms_raw = [
+        "name"    "capacity"  "GenderWrong"
+        "room 1"  "3"         "F"
+        "room 2"  "4"         "F"
+        "room 3"  "2"         "M"
+        "room 4"  "5"         "M"
+    ]
+    err_msg = "First cell in third column of sheet `rooms` should contain the room gender" *
+        " and the header `gender`, instead contains: `GenderWrong`"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_rooms(rooms_raw)
+end
+
+@testitem "rooms missing values" begin
+    rooms_raw = [
+        "name"    "capacity"  "gender"
+        "room 1"  "3"         "F"
+        "room 2"  ""          "F"
+        "room 3"  "2"         "M"
+        "room 4"  "5"         "M"
+    ]
+    err_msg = "Inconsistent missing values in sheet `rooms`, room number 2:" *
+        "\n  name = room 2\n  capacity = ❓\n  gender = F"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_rooms(rooms_raw)
+end
+
+@testitem "rooms duplicates" begin
+    rooms_raw = [
+        "name"    "capacity"  "gender"
+        "room 1"  "3"         "F"
+        "room 2"  "4"         "F"
+        "room 3"  "2"         "M"
+        "room 4"  "5"         "M"
+        "room 4"  "5"         "M"
+    ]
+    err_msg = "Room duplicates found!"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_rooms(rooms_raw)
 end
 
 @testitem "not enough beds" begin

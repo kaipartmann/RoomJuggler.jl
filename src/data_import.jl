@@ -103,7 +103,7 @@ function get_wishes(wishes_raw::Matrix{String}, guests::Vector{Guest})
 
         # error if not enough friends
         if length(friends) < 2
-            error("A wish needs to contain at least 2 friends!")
+            error("A wish needs to contain at least 2 friends!\n  See e-mail: ", mail)
         end
 
         # find corresponding guest_ids of the wish friends
@@ -151,7 +151,7 @@ function check_for_multiple_wishes(wishes::Vector{Wish}, guests::Vector{Guest})
         if length(wishlist) > 1
             name = guests[guest_id].name
             wish_mails = [w.mail for w in wishes[wishlist]]
-            error("Guest ", name," occurs in multiple wishes! \n  e-mails: ", wish_mails)
+            error("Guest ", name," occurs in multiple wishes!\n  e-mails: ", wish_mails)
         end
     end
 
@@ -175,14 +175,15 @@ function get_rooms(rooms_raw::Matrix{String})
 
     # second column should contain the room capacity and the heading `capacity`
     if rooms_raw[begin, begin+1] !== "capacity"
-        error("First cell in second column of sheet `rooms` should contain the capacity and",
-            "the header `capacity`, instead contains: `", rooms_raw[begin, begin+1], "`")
+        error("First cell in second column of sheet `rooms` should contain the capacity ",
+            "and the header `capacity`, instead contains: `", rooms_raw[begin, begin+1],
+            "`")
     end
 
     # third column should contain the room gender and the heading `gender`
     if rooms_raw[begin, begin+2] !== "gender"
         error("First cell in third column of sheet `rooms` should contain the room gender",
-            "and the header `gender`, instead contains: `", rooms_raw[begin, begin+2], "`")
+            " and the header `gender`, instead contains: `", rooms_raw[begin, begin+2], "`")
     end
 
     # cut the header
@@ -217,7 +218,7 @@ function get_rooms(rooms_raw::Matrix{String})
     end
 
     # check for duplicates
-    length(rooms) > length(unique(rooms)) && error("Guest duplicates found!")
+    length(rooms) > length(unique(rooms)) && error("Room duplicates found!")
 
     return rooms
 end
