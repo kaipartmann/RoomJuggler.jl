@@ -159,6 +159,15 @@ function guests_report(rjj::RoomJugglerJob)
     return reduce(vcat, [header, report_female, report_male])
 end
 
+"""
+    report(excel_file::String, rjj::RoomJugglerJob)
+
+Export a report about the `RoomJugglerJob` as an Excel-file.
+
+# Arguments
+- `excel_file::String`: path & name of the exported Excel-file with extension `.xlsx`
+- `rjj::RoomJugglerJob`: `RoomJugglerJob` the report is about
+"""
 function report(excel_file::String, rjj::RoomJugglerJob)
     XLSX.openxlsx(excel_file, mode="w") do xf
         # guests

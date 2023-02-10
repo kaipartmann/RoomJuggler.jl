@@ -1,3 +1,12 @@
+"""
+    Guest(name::String, gender::Symbol)
+
+A guest with a name and a gender.
+
+# Fields
+- `name::String`: name of the guest
+- `gender::Symbol`: gender of the guest, currently only supports :M or :F
+"""
 struct Guest
     name::String
     gender::Symbol
@@ -12,6 +21,16 @@ function Base.show(io::IO, ::MIME"text/plain", g::Guest)
     return nothing
 end
 
+"""
+    Wish(mail::String, guest_ids::Vector{Int}, gender::Symbol)
+
+A wish of multiple guests that want to share the same room.
+
+# Fields
+- `mail::String`: e-mail the wish was sent with
+- `guest_ids::Vector{Int}`: guest indices of the guest in this wish
+- `gender::Symbol`: gender of the guests in the wish, currently only supports :M or :F
+"""
 struct Wish
     mail::String
     guest_ids::Vector{Int}
@@ -23,6 +42,16 @@ function Base.show(io::IO, ::MIME"text/plain", w::Wish)
     return nothing
 end
 
+"""
+    Room(name::String, capacity::Int, gender::Symbol)
+
+A room containing multiple guests.
+
+# Fields
+- `name::String`: name of the room
+- `capacity::Int`: number of guests the room can contain
+- `gender::Symbol`: gender of the guests in the room, currently only supports :M or :F
+"""
 struct Room
     name::String
     capacity::Int
@@ -101,6 +130,23 @@ struct RoomOccupancyProblem
     end
 end
 
+"""
+    RoomJugglerJob(excel_file::String)
+
+A RoomJugglerJob containing the guests, rooms and wishes - a problem that needs juggling!
+
+# Arguments
+- `excel_file::String`: Excel file with extension `.xlsx`, containing the guests, rooms and
+  wishes
+
+# Fields
+- `n_guests::Int`: number of guests
+- `n_wishes::Int`: number of wishes
+- `n_rooms::Int`: number of rooms
+- `n_beds::Int`: number of all beds in the room, the sum of all room capacities
+- `ropf::RoomOccupancyProblem`: room occupancy problem of the female guests
+- `ropm::RoomOccupancyProblem`: room occupancy problem of the male guests
+"""
 struct RoomJugglerJob
     n_guests::Int
     n_wishes::Int
@@ -158,6 +204,25 @@ function Base.show(io::IO, ::MIME"text/plain", rjj::RoomJugglerJob)
     return nothing
 end
 
+"""
+    JuggleConfig(; [n_iter, beta, t_0, t_min])
+
+Configuration of the underlying simulated annealing optimization.
+
+# Arguments
+- `n_iter::Int=300`: number of iterations per temperature (default=300)
+- `beta::Real=0.999`: temperature decrease factor (default=0.999, condition: 0 < β < 1)
+- `t_0::Real=1.0`: starting temperature (default=1.0)
+- `t_min::Real=1e-7`: minimum temperature (default=1e-7)
+
+# Fields
+- `n_iter::Int`: number of iterations per temperature
+- `n_total_iter::Int`: number of total iterations (`n_iter * length(t_history)`)
+- `beta::Float64`: temperature decrease factor
+- `t_0::Float64`: starting temperature
+- `t_min::Float64`: minimum temperature
+- `t_history::Vector{Float64}`: temperature steps
+"""
 struct JuggleConfig
     n_iter::Int
     n_total_iter::Int

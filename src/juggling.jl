@@ -1,3 +1,16 @@
+
+"""
+    juggle!(rjj::RoomJugglerJob; config=JuggleConfig())
+
+Function to start juggling of the guests in the `RoomJugglerJob`.
+
+# Arguments
+- `rjj::RoomJugglerJob`: `RoomJugglerJob` that gets juggled
+- `config`: two possible options:
+    - `config::JuggleConfig`: same configuration for the female and male problem
+    - `config::Tuple{JuggleConfig, JuggleConfig}`: two configurations, the first is for the
+      female problem, the second is for the male problem
+"""
 function juggle!(rjj::RoomJugglerJob; config=JuggleConfig())
     log_init()
     if typeof(config) == JuggleConfig
