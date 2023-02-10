@@ -1,6 +1,73 @@
+@testitem "get_raw_data" begin
+    job_file = joinpath(@__DIR__, "data", "job10.xlsx")
+    guests_raw, wishes_raw, rooms_raw = RoomJuggler.get_raw_data(job_file)
+    @test guests_raw[1:11, 1:2] == [
+        "name"             "gender"
+        "Martha Chung"     "F"
+        "John Kinder"      "M"
+        "Cami Horton"      "F"
+        "Asa Martell"      "M"
+        "Barbara Brown"    "F"
+        "Sean Cortez"      "M"
+        "Catherine Owens"  "F"
+        "Joseph Russell"   "M"
+        "Mark White"       "M"
+        "Kylie Green"      "F"
+    ]
+    @test wishes_raw[1:2, 1:4] == [
+        "mark.white@test.com"  "Mark White"       "John Kinder"  ""
+        "co123@web.com"        "Catherine Owens"  "Cami Horton"  "Barbara Brown"
+    ]
+    @test rooms_raw[1:5, 1:3] == [
+        "name"    "capacity"  "gender"
+        "room 1"  "3"          "F"
+        "room 2"  "4"          "F"
+        "room 3"  "2"          "M"
+        "room 4"  "5"          "M"
+    ]
+end
+
+@testitem "nonempty rows and cols" begin
+    let
+        m = [
+            "" "" ""
+            "" "1" ""
+            "" "" ""
+        ]
+        @test RoomJuggler.get_nonempty_cols(m) == [""; "1"; "";;]
+        @test RoomJuggler.get_nonempty_rows(m) == ["" "1" ""]
+        @test RoomJuggler.nonempty(m) == ["1";;]
+    end
+    let
+        m = [
+            "" "" "" "" ""
+            "" "1" "" "2" ""
+            "" "" "" "" ""
+            "" "3" "" "4" ""
+            "" "" "" "" ""
+        ]
+        @test RoomJuggler.get_nonempty_cols(m) == [
+            ""   ""
+            "1"  "2"
+            ""   ""
+            "3"  "4"
+            ""   ""
+        ]
+        @test RoomJuggler.get_nonempty_rows(m) == [
+            ""  "1"  ""  "2"  ""
+            ""  "3"  ""  "4"  ""
+        ]
+        @test RoomJuggler.nonempty(m) == [
+            "1"  "2"
+            "3"  "4"
+        ]
+    end
+end
+
 @testitem "get_guests" begin
-    guests_file = joinpath(@__DIR__, "data", "guests10.csv")
-    guests = RoomJuggler.get_guests(guests_file)
+    job_file = joinpath(@__DIR__, "data", "job10.xlsx")
+    guests_raw, _, _ = RoomJuggler.get_raw_data(job_file)
+    guests = RoomJuggler.get_guests(guests_raw)
     guests_manually = [
         Guest("Martha Chung", :F),
         Guest("John Kinder", :M),
@@ -23,11 +90,68 @@
     @test String(take!(io)) == "RoomJuggler.Guest: Martha Chung (F)"
 end
 
+@testitem "get_guests not enough columns" begin
+    guests_raw = ["Asa Martell";"Barbara Brown";"Sean Cortez";"Catherine Owens";;]
+    err_msg = "Not enough columns with data! Sheet `guests` needs to contain the guest " *
+        "names in one column and the guest genders another column!"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_guests(guests_raw)
+end
+
+@testitem "get_guests no header name" begin
+    guests_raw = [
+        "NamesWrong" "gender"
+        "Asa Martell" "F"
+        "Barbara Brown" "F"
+        "Sean Cortez" "M"
+        "Catherine Owens" "F"
+    ]
+    err_msg = "First cell in first column of sheet `guests` should contain the names and" *
+        " the header `name`, instead contains: `NamesWrong`"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_guests(guests_raw)
+end
+
+@testitem "get_guests no header gender" begin
+    guests_raw = [
+        "name" "WrongGenderHeader"
+        "Asa Martell" "F"
+        "Barbara Brown" "F"
+        "Sean Cortez" "M"
+        "Catherine Owens" "F"
+    ]
+    err_msg = "First cell in second column of sheet `guests` should contain the genders " *
+        "and the header `gender`, instead contains: `WrongGenderHeader`"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_guests(guests_raw)
+end
+
+@testitem "get_guests missing value" begin
+    guests_raw = [
+        "name" "gender"
+        "Asa Martell" "F"
+        "" "F"
+        "Sean Cortez" "M"
+        "Catherine Owens" "F"
+    ]
+    err_msg = "Missing value in sheet `guests`, guest number 2:\n  name = ❓\n  gender = F"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_guests(guests_raw)
+end
+
+@testitem "get_guests duplicates" begin
+    guests_raw = [
+        "name" "gender"
+        "Asa Martell" "F"
+        "Asa Martell" "F"
+        "Sean Cortez" "M"
+        "Catherine Owens" "F"
+    ]
+    err_msg = "Guest duplicates found!"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_guests(guests_raw)
+end
+
 @testitem "wishes" begin
-    guests_file = joinpath(@__DIR__, "data", "guests10.csv")
-    guests = RoomJuggler.get_guests(guests_file)
-    wishes_file = joinpath(@__DIR__, "data", "wishes10.csv")
-    wishes = RoomJuggler.get_wishes(wishes_file, guests)
+    job_file = joinpath(@__DIR__, "data", "job10.xlsx")
+    guests_raw, wishes_raw, rooms_raw = RoomJuggler.get_raw_data(job_file)
+    guests = RoomJuggler.get_guests(guests_raw)
+    wishes = RoomJuggler.get_wishes(wishes_raw, guests)
     wishes_manually = [
         Wish("mark.white@test.com", [9, 2], :M),
         Wish("co123@web.com", [7, 3, 5], :F),
@@ -43,84 +167,147 @@ end
     @test String(take!(io)) == "2-person RoomJuggler.Wish from mark.white@test.com"
 end
 
+@testitem "wishes not enough columns" begin
+    guests = [Guest("Martha Chung", :F)]
+    wishes_raw = [
+        "mark.white@test.com"  "Mark White"
+        "co123@web.com"        "Catherine Owens"
+    ]
+    err_msg = "Not enough columns with data! Sheet `wishes` needs to contain the e-mail " *
+        "the wish was sent with and the friends in the other columns!"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_wishes(wishes_raw, guests)
+end
+
+@testitem "wishes no email in wish 1" begin
+    guests = [Guest("Martha Chung", :F)]
+    wishes_raw = [
+        ""  "Mark White"       "John Kinder"  ""
+    ]
+    err_msg = "No e-mail in wish number 1 found!"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_wishes(wishes_raw, guests)
+end
+
+@testitem "wishes no email in wish 2" begin
+    guests = [
+        Guest("Martha Chung", :F),
+        Guest("John Kinder", :M),
+        Guest("Cami Horton", :F),
+        Guest("Asa Martell", :M),
+        Guest("Barbara Brown", :F),
+        Guest("Sean Cortez", :M),
+        Guest("Catherine Owens", :F),
+        Guest("Joseph Russell", :M),
+        Guest("Mark White", :M),
+        Guest("Kylie Green", :F),
+    ]
+    wishes_raw = [
+        "mark.white@test.com"  "Mark White"       "John Kinder"  ""
+        ""        "Catherine Owens"  "Cami Horton"  "Barbara Brown"
+    ]
+    err_msg = "No e-mail in wish number 2 found!"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_wishes(wishes_raw, guests)
+end
+
+@testitem "wishes not enough friends" begin
+    guests = [
+        Guest("Martha Chung", :F),
+        Guest("John Kinder", :M),
+        Guest("Cami Horton", :F),
+        Guest("Asa Martell", :M),
+        Guest("Barbara Brown", :F),
+        Guest("Sean Cortez", :M),
+        Guest("Catherine Owens", :F),
+        Guest("Joseph Russell", :M),
+        Guest("Mark White", :M),
+        Guest("Kylie Green", :F),
+    ]
+    wishes_raw = [
+        "mark.white@test.com"  "Mark White"       ""  ""
+        "co123@web.com"        "Catherine Owens"  "Cami Horton"  "Barbara Brown"
+    ]
+    err_msg = "A wish needs to contain at least 2 friends!" *
+        "\n  See e-mail: mark.white@test.com"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_wishes(wishes_raw, guests)
+end
+
 @testitem "mixed gender wishes" begin
-    using Logging
-    guests_file = joinpath(@__DIR__, "data", "guests10.csv")
-    guests = RoomJuggler.get_guests(guests_file)
-    wishes_mg_file = joinpath(@__DIR__, "data", "wishes10_mg.csv") # mixed gender
-    @test_throws ErrorException wishes_mg = RoomJuggler.get_wishes(
-        wishes_mg_file,
-        guests,
-    )
-    io = IOBuffer()
-    logger = SimpleLogger(io)
-    with_logger(logger) do
-        try
-            wishes_mg = RoomJuggler.get_wishes(wishes_mg_file, guests)
-        catch
-        end
-    end
-    flush(io)
-    message = String(take!(io))
-    @test occursin("Martha Chung", message)
-    @test occursin("Mark White", message)
-    @test occursin("John Kinder", message)
-    @test occursin("Joseph Russell", message)
-    @test occursin("Kylie Green", message)
+    job_file = joinpath(@__DIR__, "data", "job10_mg.xlsx")
+    guests_raw, wishes_raw, _ = RoomJuggler.get_raw_data(job_file)
+    guests = RoomJuggler.get_guests(guests_raw)
+    err_msg = "Mixed gender wish found:\n  e-mail: mark.white@test.com\n  guests: " *
+        "RoomJuggler.Guest[RoomJuggler.Guest(\"Mark White\", :M), " *
+        "RoomJuggler.Guest(\"John Kinder\", :M), RoomJuggler.Guest(\"Martha Chung\", :F)]"
+    err = ErrorException(err_msg)
+    @test_throws err wishes_mg = RoomJuggler.get_wishes(wishes_raw, guests)
 end
 
 @testitem "multiple wishes per person" begin
-    using Logging
-    guests_file = joinpath(@__DIR__, "data", "guests10.csv")
-    guests = RoomJuggler.get_guests(guests_file)
-    wishes_mw_file = joinpath(@__DIR__, "data", "wishes10_mw.csv") # multiple wishes
-    @test_throws ErrorException wishes_mw = RoomJuggler.get_wishes(
-        wishes_mw_file,
-        guests,
-    )
-    io = IOBuffer()
-    logger = SimpleLogger(io)
-    with_logger(logger) do
-        try
-            wishes_mg = RoomJuggler.get_wishes(wishes_mw_file, guests)
-        catch
-        end
-    end
-    flush(io)
-    message = String(take!(io))
-    @test occursin("John Kinder", message)
-    @test occursin("mark.white@test.com", message)
-    @test occursin("john.kinder@tmobile.com", message)
+    job_file = joinpath(@__DIR__, "data", "job10_mw.xlsx")
+    guests_raw, wishes_raw, _ = RoomJuggler.get_raw_data(job_file)
+    guests = RoomJuggler.get_guests(guests_raw)
+    err_msg = "Guest John Kinder occurs in multiple wishes!\n  " *
+        "e-mails: [\"mark.white@test.com\", \"john.kinder@tmobile.com\"]"
+    err = ErrorException(err_msg)
+    @test_throws err wishes_mg = RoomJuggler.get_wishes(wishes_raw, guests)
 end
 
 @testitem "unknown guests" begin
-    using Logging
-    guests_file = joinpath(@__DIR__, "data", "guests10.csv")
-    guests = RoomJuggler.get_guests(guests_file)
-    wishes_un_file = joinpath(@__DIR__, "data", "wishes10_un.csv") # unknown guest
-    @test_throws ErrorException wishes_un = RoomJuggler.get_wishes(
-        wishes_un_file,
-        guests,
-    )
-    io = IOBuffer()
-    logger = SimpleLogger(io)
-    with_logger(logger) do
-        try
-            wishes_mg = RoomJuggler.get_wishes(wishes_un_file, guests)
-        catch
-        end
-    end
-    flush(io)
-    message = String(take!(io))
-    @test occursin("Bibi Blocksberg", message)
-    @test occursin("John Legend", message)
-    @test occursin("co123@web.com", message)
-    @test occursin("mark.white@test.com", message)
+    job_file = joinpath(@__DIR__, "data", "job10_un.xlsx")
+    guests_raw, wishes_raw, _ = RoomJuggler.get_raw_data(job_file)
+    guests = RoomJuggler.get_guests(guests_raw)
+    err_msg = "Unknown guest in wish:\n  e-mail: mark.white@test.com\n  name: John Legend"
+    err = ErrorException(err_msg)
+    @test_throws err wishes_mg = RoomJuggler.get_wishes(wishes_raw, guests)
+end
+
+@testitem "unknown guests manually" begin
+    guests = [
+        Guest("Martha Chung", :F),
+        Guest("John Kinder", :M),
+        Guest("Cami Horton", :F),
+        Guest("Asa Martell", :M),
+        Guest("Barbara Brown", :F),
+        Guest("Sean Cortez", :M),
+        Guest("Catherine Owens", :F),
+        Guest("Joseph Russell", :M),
+        Guest("Mark White", :M),
+        Guest("Kylie Green", :F),
+    ]
+    wishes_raw = [
+        "mark.white@test.com"  "Mark White"       "Tony Stark"  ""
+        "co123@web.com"        "Catherine Owens"  "Cami Horton"  "Barbara Brown"
+    ]
+    err_msg = "Unknown guest in wish:\n  e-mail: mark.white@test.com\n  name: Tony Stark"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_wishes(wishes_raw, guests)
+end
+
+@testitem "multiple wishes manually" begin
+    guests = [
+        Guest("Martha Chung", :F),
+        Guest("John Kinder", :M),
+        Guest("Cami Horton", :F),
+        Guest("Asa Martell", :M),
+        Guest("Barbara Brown", :F),
+        Guest("Sean Cortez", :M),
+        Guest("Catherine Owens", :F),
+        Guest("Joseph Russell", :M),
+        Guest("Mark White", :M),
+        Guest("Kylie Green", :F),
+    ]
+    wishes_raw = [
+        "mark.white@test.com"  "Mark White"       "John Kinder"  ""
+        "mark.white2@test.com"  "Mark White"       "Sean Cortez"  ""
+        "co123@web.com"        "Catherine Owens"  "Cami Horton"  "Barbara Brown"
+    ]
+    err_msg = "Guest Mark White occurs in multiple wishes!\n  " *
+        "e-mails: [\"mark.white@test.com\", \"mark.white2@test.com\"]"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_wishes(wishes_raw, guests)
 end
 
 @testitem "rooms" begin
-    rooms_file = joinpath(@__DIR__, "data", "rooms10.csv")
-    rooms = RoomJuggler.get_rooms(rooms_file)
+    job_file = joinpath(@__DIR__, "data", "job10.xlsx")
+    _, _, rooms_raw = RoomJuggler.get_raw_data(job_file)
+    rooms = RoomJuggler.get_rooms(rooms_raw)
     rooms_manually = [
         Room("room 1", 3, :F),
         Room("room 2", 4, :F),
@@ -138,18 +325,93 @@ end
     @test String(take!(io)) == "3-person RoomJuggler.Room room 1 (F)"
 end
 
+@testitem "rooms not enough columns" begin
+    rooms_raw = [
+        "name" "capacity"
+        "room 1" "5"
+        "room 2" "4"
+    ]
+    err_msg = "Not enough columns with data! Sheet `rooms` needs to contain the room " *
+        "names in one column, room capacity (number of beds) in one column and the " *
+        "guest genders in one column!"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_rooms(rooms_raw)
+end
+
+@testitem "rooms wrong header name" begin
+    rooms_raw = [
+        "NameWrong"    "capacity"  "gender"
+        "room 1"  "3"         "F"
+        "room 2"  "4"         "F"
+        "room 3"  "2"         "M"
+        "room 4"  "5"         "M"
+    ]
+    err_msg = "First cell in first column of sheet `rooms` should contain the name and" *
+        "the header `name`, instead contains: `NameWrong`"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_rooms(rooms_raw)
+end
+
+@testitem "rooms wrong header capacity" begin
+    rooms_raw = [
+        "name"    "CapacityWrong"  "gender"
+        "room 1"  "3"         "F"
+        "room 2"  "4"         "F"
+        "room 3"  "2"         "M"
+        "room 4"  "5"         "M"
+    ]
+    err_msg = "First cell in second column of sheet `rooms` should contain the capacity " *
+        "and the header `capacity`, instead contains: `CapacityWrong`"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_rooms(rooms_raw)
+end
+
+@testitem "rooms wrong header gender" begin
+    rooms_raw = [
+        "name"    "capacity"  "GenderWrong"
+        "room 1"  "3"         "F"
+        "room 2"  "4"         "F"
+        "room 3"  "2"         "M"
+        "room 4"  "5"         "M"
+    ]
+    err_msg = "First cell in third column of sheet `rooms` should contain the room gender" *
+        " and the header `gender`, instead contains: `GenderWrong`"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_rooms(rooms_raw)
+end
+
+@testitem "rooms missing values" begin
+    rooms_raw = [
+        "name"    "capacity"  "gender"
+        "room 1"  "3"         "F"
+        "room 2"  ""          "F"
+        "room 3"  "2"         "M"
+        "room 4"  "5"         "M"
+    ]
+    err_msg = "Inconsistent missing values in sheet `rooms`, room number 2:" *
+        "\n  name = room 2\n  capacity = ❓\n  gender = F"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_rooms(rooms_raw)
+end
+
+@testitem "rooms duplicates" begin
+    rooms_raw = [
+        "name"    "capacity"  "gender"
+        "room 1"  "3"         "F"
+        "room 2"  "4"         "F"
+        "room 3"  "2"         "M"
+        "room 4"  "5"         "M"
+        "room 4"  "5"         "M"
+    ]
+    err_msg = "Room duplicates found!"
+    @test_throws ErrorException(err_msg) RoomJuggler.get_rooms(rooms_raw)
+end
+
 @testitem "not enough beds" begin
-    g = joinpath(@__DIR__, "data", "guests10.csv")
-    w = joinpath(@__DIR__, "data", "wishes10.csv")
-    r = joinpath(@__DIR__, "data", "rooms10_neb.csv")
-    @test_throws ErrorException("more guests than beds specified") RoomJugglerJob(g, w, r)
+    job_file = joinpath(@__DIR__, "data", "job10_neb.xlsx")
+    err_msg = "More guests than beds!\n  number of guests = 5\n  number of beds = 4\n"
+    err = ErrorException(err_msg)
+    @test_throws err RoomJugglerJob(job_file)
 end
 
 @testitem "RoomJugglerJob" begin
-    g = joinpath(@__DIR__, "data", "guests10.csv")
-    w = joinpath(@__DIR__, "data", "wishes10.csv")
-    r = joinpath(@__DIR__, "data", "rooms10.csv")
-    rjj = RoomJugglerJob(g, w, r)
+    job_file = joinpath(@__DIR__, "data", "job10.xlsx")
+    rjj = RoomJugglerJob(job_file)
     @test rjj.n_guests == 10
     @test rjj.n_wishes == 2
     @test rjj.n_rooms == 4

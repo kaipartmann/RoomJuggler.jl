@@ -1,6 +1,10 @@
 struct Guest
     name::String
     gender::Symbol
+    function Guest(name::String, gender::Symbol)
+        gender !== :F && gender !== :M && error("Unknown gender: ", gender)
+        new(name, gender)
+    end
 end
 
 function Base.show(io::IO, ::MIME"text/plain", g::Guest)
@@ -23,6 +27,10 @@ struct Room
     name::String
     capacity::Int
     gender::Symbol
+    function Room(name::String, capacity::Int, gender::Symbol)
+        gender !== :F && gender !== :M && error("Unknown gender: ", gender)
+        new(name, capacity, gender)
+    end
 end
 
 function Base.show(io::IO, ::MIME"text/plain", r::Room)
@@ -56,7 +64,15 @@ struct RoomOccupancyProblem
         n_beds = sum([r.capacity for r in rooms])
 
         # error if not enough beds
-        n_guests > n_beds && error("more guests than beds specified")
+        if n_guests > n_beds
+            err_msg = string(
+                "More guests than beds!",
+                "\n  number of guests = ", n_guests,
+                "\n  number of beds = ", n_beds,
+                "\n",
+            )
+            error(err_msg)
+        end
 
         # find the relations and the maximum happiness between the guests
         relations = find_relations(wishes, n_beds)
@@ -93,15 +109,14 @@ struct RoomJugglerJob
     ropf::RoomOccupancyProblem
     ropm::RoomOccupancyProblem
 
-    function RoomJugglerJob(
-        guests_file::String,
-        wishes_file::String,
-        rooms_file::String,
-    )
-        # read the csv files
-        guests = get_guests(guests_file)
-        wishes = get_wishes(wishes_file, guests)
-        rooms = get_rooms(rooms_file)
+    function RoomJugglerJob(excel_file::String)
+        # read the excel_file
+        guests_raw, wishes_raw, rooms_raw = get_raw_data(excel_file)
+
+        # get the Vector{Guest}, Vector{Wish}, Vector{Room}
+        guests = get_guests(guests_raw)
+        wishes = get_wishes(wishes_raw, guests)
+        rooms = get_rooms(rooms_raw)
 
         # get the basic numbers
         n_guests = length(guests)
@@ -158,7 +173,7 @@ struct JuggleConfig
         t_min::Real=1e-7,
     )
         # check for bounds of beta
-        !(0 < beta < 1) && throw(BoundsError("condition 0 < β < 1 violated with β = $beta"))
+        !(0 < beta < 1) && throw(BoundsError("Condition 0 < β < 1 violated with β = $beta"))
         t_history = temperature_history(t_0, t_min, beta)
         n_total_iter = length(t_history) * n_iter
 

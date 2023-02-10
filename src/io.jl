@@ -44,98 +44,138 @@ function log_results(rop::RoomOccupancyProblem, happiness::Int, n_total_iter::In
     end
 end
 
-function export_wish_overview(io::IO, rop::RoomOccupancyProblem)
-    for (wish_id, wish) in enumerate(rop.wishes)
-        wish_checkmark = rop.fulfilled_wishes[wish_id] ? "✔︎" : "✘"
-        @printf(io, "%s %s (%s):\n", wish_checkmark, wish.mail, wish.gender)
-        for guest_id in wish.guest_ids
-            guest_name = rop.guests[guest_id].name
-            guest_gender = rop.guests[guest_id].gender
-            guest_room_name = rop.rooms[rop.room_id_of_guest[guest_id]].name
-            @printf(io, "    %s (%s) - %s\n", guest_name, guest_gender, guest_room_name)
-        end
-        println(io)
+function wishes_report(rop::RoomOccupancyProblem)
+    report = Vector{Matrix{String}}()
+
+    for wish_id in eachindex(rop.wishes)
+        status = rop.fulfilled_wishes[wish_id] ? "✔" : "✖"
+        mail = rop.wishes[wish_id].mail
+        guest_ids = rop.wishes[wish_id].guest_ids
+        guests = rop.guests[guest_ids]
+        names = [g.name for g in guests]
+        genders = [string(g.gender) for g in guests]
+        rooms = rop.rooms[rop.room_id_of_guest[guest_ids]]
+        room_names = [r.name for r in rooms]
+
+        m = fill("", length(guest_ids) + 2, 4)
+        m[1, 1] = status * " " * mail
+        m[2:end-1, 2] = names
+        m[2:end-1, 3] = genders
+        m[2:end-1, 4] = room_names
+
+        push!(report, m)
     end
-    return nothing
+
+    return reduce(vcat, report)
 end
 
-function export_room_overview(io::IO, rop::RoomOccupancyProblem)
-    for (room_id, room) in enumerate(rop.rooms)
-        @printf(io, "%s (%s, %d beds):\n", room.name, room.gender, room.capacity)
+function wishes_report(rjj::RoomJugglerJob)
+    header = [
+        "OVERVIEW OF ALL WISHES" "" "" ""
+    ]
+    females_header = [
+        "" "" "" ""
+        "--- FEMALES: ---" "" "" ""
+        "" "" "" ""
+    ]
+    females_report = wishes_report(rjj.ropf)
+    males_header = [
+        "" "" "" ""
+        "--- MALES: ---" "" "" ""
+        "" "" "" ""
+    ]
+    males_report = wishes_report(rjj.ropm)
+    report = [header, females_header, females_report, males_header, males_report]
+
+    return reduce(vcat, report)
+end
+
+function rooms_report(rop::RoomOccupancyProblem)
+    report = Vector{Matrix{String}}()
+
+    for room_id in eachindex(rop.rooms)
+        room_name = rop.rooms[room_id].name
+        n_beds = rop.rooms[room_id].capacity
+
         guest_ids = rop.guest_ids_of_room[room_id]
-        for (bed_nr, guest_id) in enumerate(guest_ids)
-            guest_name = rop.guests[guest_id].name
-            guest_gender = rop.guests[guest_id].gender
-            @printf(io, "    %d. %s (%s)\n", bed_nr, guest_name, guest_gender)
-        end
-        if length(guest_ids) < room.capacity
-            for bed_nr in range(start=length(guest_ids)+1, stop=room.capacity)
-                @printf(io, "    %d. ---\n", bed_nr)
-            end
-        end
-        println(io)
+        guests = rop.guests[guest_ids]
+        guest_numbers = [string(i, ".") for i in 1:n_beds]
+        guest_names = fill("---", n_beds)
+        guest_names[1:length(guest_ids)] = [g.name for g in guests]
+        guest_genders = fill("", n_beds)
+        guest_genders[1:length(guest_ids)] = [string(g.gender) for g in guests]
+
+        m = fill("", n_beds + 2, 4)
+        m[1, 1] = room_name
+        m[2:end-1, 2] = guest_numbers
+        m[2:end-1, 3] = guest_names
+        m[2:end-1, 4] = guest_genders
+
+        push!(report, m)
     end
 
-    return nothing
+    return reduce(vcat, report)
 end
 
-function export_guests_csv(file::String, rjj::RoomJugglerJob)
-    open(file, "w") do io
-        println(io, "name;gender;room")
+function rooms_report(rjj::RoomJugglerJob)
+    header = [
+        "OVERVIEW OF ALL ROOMS" "" "" ""
+    ]
+    females_header = [
+        "" "" "" ""
+        "--- FEMALES: ---" "" "" ""
+        "" "" "" ""
+    ]
+    females_report = rooms_report(rjj.ropf)
+    males_header = [
+        "" "" "" ""
+        "--- MALES: ---" "" "" ""
+        "" "" "" ""
+    ]
+    males_report = rooms_report(rjj.ropm)
+    report = [header, females_header, females_report, males_header, males_report]
 
-        # females
-        for (guest_id, guest) in enumerate(rjj.ropf.guests)
-            room_name = rjj.ropf.rooms[rjj.ropf.room_id_of_guest[guest_id]].name
-            @printf(io, "%s;%s;%s\n", guest.name, guest.gender, room_name)
-        end
-
-        # males
-        for (guest_id, guest) in enumerate(rjj.ropm.guests)
-            room_name = rjj.ropm.rooms[rjj.ropm.room_id_of_guest[guest_id]].name
-            @printf(io, "%s;%s;%s\n", guest.name, guest.gender, room_name)
-        end
-    end
-
-    return nothing
+    return reduce(vcat, report)
 end
 
-function export_report(file::String, rjj::RoomJugglerJob)
-    open(file, "w") do io
-        println(io, "="^67)
-        println(io, "OVERVIEW OF ALL WISHES")
-        println(io, "="^67)
-        println(io, "\n--- FEMALES: ---\n")
-        export_wish_overview(io, rjj.ropf)
-        println(io, "\n--- MALES: ---\n")
-        export_wish_overview(io, rjj.ropm)
-        println(io, "="^67)
-        println(io, "OVERVIEW OF ALL ROOMS")
-        println(io, "="^67)
-        println(io, "\n--- FEMALES: ---\n")
-        export_room_overview(io, rjj.ropf)
-        println(io, "\n--- MALES: ---\n")
-        export_room_overview(io, rjj.ropm)
-    end
+function guests_report(rop::RoomOccupancyProblem)
+    report = fill("", rop.n_guests, 3)
+    report[:, 1] = [g.name for g in rop.guests]
+    report[:, 2] = [string(g.gender) for g in rop.guests]
+    report[:, 3] = [r.name for r in rop.rooms[rop.room_id_of_guest]]
 
-    return nothing
+    return report
 end
 
-function export_results(dir::String, rjj::RoomJugglerJob; force::Bool=false)
-    # if dir exists, check if overwriting is allowed
-    if isdir(dir)
-        if !force
-            error("directory $dir exists! use keyword argument force=true to overwrite")
-        end
-    else
-        # otherwise create dir
-        mkpath(dir)
+function guests_report(rjj::RoomJugglerJob)
+    header = [
+        "OVERVIEW OF ALL GUESTS" "" ""
+        "" "" ""
+        "name" "gender" "room"
+    ]
+    report_female = guests_report(rjj.ropf)
+    report_male = guests_report(rjj.ropm)
+
+    return reduce(vcat, [header, report_female, report_male])
+end
+
+function report(excel_file::String, rjj::RoomJugglerJob)
+    XLSX.openxlsx(excel_file, mode="w") do xf
+        # guests
+        gsheet = xf[1]
+        XLSX.rename!(gsheet, "guests_report")
+        gsheet["A1"] = guests_report(rjj)
+
+        # wishes
+        XLSX.addsheet!(xf, "wishes_report")
+        wsheet = xf["wishes_report"]
+        wsheet["A1"] = wishes_report(rjj)
+
+        # rooms
+        XLSX.addsheet!(xf, "rooms_report")
+        rsheet = xf["rooms_report"]
+        rsheet["A1"] = rooms_report(rjj)
     end
-
-    # export csv file for guests and report
-    export_guests_csv(joinpath(dir, "guests.csv"), rjj)
-    export_report(joinpath(dir, "report.txt"), rjj)
-
-    println("✔︎ results exported to $dir")
 
     return nothing
 end
