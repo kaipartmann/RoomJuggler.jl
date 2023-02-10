@@ -1,5 +1,6 @@
+```@raw html
 <img src="assets/logo.png" width="360" />
-
+```
 # RoomJuggler
 Documentation for the non-registered Julia package [`RoomJuggler.jl`](https://github.com/kfrb/RoomJuggler.jl).
 
