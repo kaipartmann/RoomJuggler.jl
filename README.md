@@ -54,3 +54,5 @@ juggle!(rjj)
 report("report.xlsx", rjj)
 ```
 
+## Getting Started
+To start working with this package, take a look at the [Step-by-step Tutorial](@ref)!
