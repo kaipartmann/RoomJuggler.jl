@@ -65,13 +65,13 @@ struct RoomOccupancyProblem
 
         # error if not enough beds
         if n_guests > n_beds
-            error_msg = string(
+            err_msg = string(
                 "More guests than beds!",
                 "\n  number of guests = ", n_guests,
                 "\n  number of beds = ", n_beds,
                 "\n",
             )
-            error(error_msg)
+            error(err_msg)
         end
 
         # find the relations and the maximum happiness between the guests

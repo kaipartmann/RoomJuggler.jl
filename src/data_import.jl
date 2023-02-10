@@ -206,13 +206,13 @@ function get_rooms(rooms_raw::Matrix{String})
 
         # only one or two values are missing
         elseif missing_value_check in (1, 2)
-            error_msg = string(
+            err_msg = string(
                 "Inconsistent missing values in sheet `rooms`, room number ", i, ":",
                 "\n  name = ", isempty(name) ? "❓" : name,
                 "\n  capacity = ", isempty(capacity) ? "❓" : capacity,
                 "\n  gender = ", isempty(gender) ? "❓" : gender
             )
-            error(error_msg)
+            error(err_msg)
         end
     end
 
