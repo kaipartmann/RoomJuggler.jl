@@ -154,7 +154,7 @@ function Base.show(io::IO, ::MIME"text/plain", rjj::RoomJugglerJob)
     @printf(io, "  %d males\n", rjj.ropm.n_guests)
     @printf(io, "%d wishes\n", rjj.n_wishes)
     @printf(io, "  %d females\n", rjj.ropf.n_wishes)
-    @printf(io, "  %d males\n", rjj.ropm.n_wishes)
+    @printf(io, "  %d males", rjj.ropm.n_wishes)
     return nothing
 end
 
