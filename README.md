@@ -55,4 +55,4 @@ report("report.xlsx", rjj)
 ```
 
 ## Getting Started
-To start working with this package, take a look at the [Step-by-step Tutorial](@ref)!
+To start working with this package, take a look at the [Step-by-step Tutorial](https://kfrb.github.io/RoomJuggler.jl/dev/step_by_step/)!
