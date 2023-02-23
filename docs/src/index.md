@@ -107,5 +107,6 @@ The following terminal recording shows how to run `RoomJuggler.jl` on the file [
     ```
 
 ## 5. Output: Excel file with a report
+The results of the optimization are exported to an Excel file:
 ![](assets/output.gif)
 
