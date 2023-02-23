@@ -53,21 +53,21 @@ add https://github.com/kfrb/RoomJuggler.jl
 
 ## 3. Input: Excel file with the data
 First you need to specify the data. The data is stored in an Excel file with the `.xlsx` format. This Excel document must meet the following criteria:
-* It has to contain one excel-sheet with the name `guests`. This sheet has to contain one column with the header `name` and one with `gender`, e.g.: 
+* It has to contain one Excel-sheet with the name `guests`. This sheet has to contain one column with the header `name` and one with `gender`, e.g.: 
 | name | gender |
 |:---|:---|
 | Martha Chung | F |
 | John Kinder | M |
 | Cami Horton | F |
 | $\vdots$ | $\vdots$ |
-* It has to contain one excel-sheet with the name `rooms`. This sheet has to contain one column with the header `name`, one with `capacity`, and one with `gender`, e.g.: 
+* It has to contain one Excel-sheet with the name `rooms`. This sheet has to contain one column with the header `name`, one with `capacity`, and one with `gender`, e.g.: 
 | name | capacity | gender |
 |:---|:---|:---|
 | room 1 | 3 | F |
 | room 2 | 4 | F |
 | room 3 | 2 | M |
 | $\vdots$ | $\vdots$ | $\vdots$ |
-* It has to contain one excel-sheet with the name `wishes`. This sheet cannot have headings and has to include the wishes, one line per wish. The first column should be a wish specifier, e.g., an e-mail address. The guests that want to be in the same room are following each in its column, e.g.:
+* It has to contain one Excel-sheet with the name `wishes`. This sheet cannot have headings and has to include the wishes, one line per wish. The first column should be a wish specifier, e.g., an e-mail address. The guests that want to be in the same room are following each in its column, e.g.:
 | | | | |
 |:---|:---|:---|:---|
 | mark.white@test.com | Mark White      | John Kinder | |

@@ -17,7 +17,7 @@ This problem must be solved every year during the Jugendtagorchester rehearsal w
 For a detailed installation guide, see the documentation: <https://kfrb.github.io/RoomJuggler.jl/stable/>
 
 ## Input: Excel file with the data
-The excel file needs to contain three sheets: `guests`, `rooms`, and `wishes`:
+The Excel file needs to contain three sheets: `guests`, `rooms`, and `wishes`:
 ![](docs/src/assets/input.gif)
 
 ## Run `RoomJuggler.jl`:
