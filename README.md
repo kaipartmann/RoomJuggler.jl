@@ -14,7 +14,7 @@ Guests need to be assigned to gender-segregated rooms. The guests can make wishe
 ## Installation
 To install, use [Julia's built-in package manager](https://docs.julialang.org/en/v1/stdlib/Pkg/). Open the Julia REPL and type `]` to enter the package mode and install `RoomJuggler.jl` as follows:
 ```shell
-pkg> add https://github.com/kfrb/RoomJuggler.jl
+add https://github.com/kfrb/RoomJuggler.jl
 ```
 
 ## Quick Start
