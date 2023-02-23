@@ -14,9 +14,10 @@ Guests must be accommodated in rooms separated by gender. Guests can request fri
 This problem must be solved every year during the Jugendtagorchester rehearsal weekend. See the website <https://www.jugendtag-orchester.de/orchester> if you want to learn more about the orchestra. `RoomJuggler.jl` was written to simplify the room juggling and help the organizers schedule the rooms.
 
 ## Installation
-For detailed Installation advice, see the documentation: <https://kfrb.github.io/RoomJuggler.jl/stable/>
+For a detailed installation guide, see the documentation: <https://kfrb.github.io/RoomJuggler.jl/stable/>
 
 ## Input: Excel file with the data
+The excel file needs to contain three sheets: `guests`, `rooms`, and `wishes`:
 ![](docs/src/assets/input.gif)
 
 ## Run `RoomJuggler.jl`:
@@ -42,4 +43,5 @@ The following terminal recording shows how to run `RoomJuggler.jl` on the file [
 [![asciicast](https://asciinema.org/a/qzUTtlC6goghCcnZzF4R5jvkn.png)](https://asciinema.org/a/qzUTtlC6goghCcnZzF4R5jvkn?speed=2)
 
 ## Output: Excel file with a report
+The results of the optimization are exported to an Excel file:
 ![](docs/src/assets/output.gif)
