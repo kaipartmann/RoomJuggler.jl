@@ -2,10 +2,10 @@
 <img src="assets/logo.png" width="360" />
 ```
 # RoomJuggler
-Documentation for the non-registered Julia package [`RoomJuggler.jl`](https://github.com/kfrb/RoomJuggler.jl).
+Documentation for the non-registered Julia package [`RoomJuggler.jl`](https://github.com/kaipartmann/RoomJuggler.jl).
 
 **Build Status:**\
-[![Build Status](https://github.com/kfrb/RoomJuggler.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/kfrb/RoomJuggler.jl/actions/workflows/CI.yml?query=branch%3Amain) [![Coverage](https://codecov.io/gh/kfrb/RoomJuggler.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/kfrb/RoomJuggler.jl)
+[![Build Status](https://github.com/kaipartmann/RoomJuggler.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/kaipartmann/RoomJuggler.jl/actions/workflows/CI.yml?query=branch%3Amain) [![Coverage](https://codecov.io/gh/kaipartmann/RoomJuggler.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/kaipartmann/RoomJuggler.jl)
 
 ## The room occupancy problem
 Guests must be accommodated in rooms separated by gender. Guests can request friends with who they would like to share a room.
@@ -48,7 +48,7 @@ juliaup status
 ## 2. Installation of `RoomJuggler.jl`
 To install, use [Julia's built-in package manager](https://docs.julialang.org/en/v1/stdlib/Pkg/). Open the Julia REPL and type `]` to enter the package mode and install `RoomJuggler.jl` as follows:
 ```
-add https://github.com/kfrb/RoomJuggler.jl
+add https://github.com/kaipartmann/RoomJuggler.jl
 ```
 
 ## 3. Input: Excel file with the data
@@ -94,7 +94,7 @@ juggle!(rjj)
 report("report.xlsx", rjj)
 ```
 
-The following terminal recording shows how to run `RoomJuggler.jl` on the file [`job_300_guests.xlsx`](https://github.com/kfrb/RoomJuggler.jl/blob/main/examples/job_300_guests.xlsx) in the [`examples`](https://github.com/kfrb/RoomJuggler.jl/blob/main/examples) directory:
+The following terminal recording shows how to run `RoomJuggler.jl` on the file [`job_300_guests.xlsx`](https://github.com/kaipartmann/RoomJuggler.jl/blob/main/examples/job_300_guests.xlsx) in the [`examples`](https://github.com/kaipartmann/RoomJuggler.jl/blob/main/examples) directory:
 ```@raw html
 <script src="https://asciinema.org/a/qzUTtlC6goghCcnZzF4R5jvkn.js" id="asciicast-qzUTtlC6goghCcnZzF4R5jvkn" async data-speed="2"></script>
 ```

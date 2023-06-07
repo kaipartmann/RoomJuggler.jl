@@ -5,12 +5,12 @@ DocMeta.setdocmeta!(RoomJuggler, :DocTestSetup, :(using RoomJuggler); recursive=
 
 makedocs(;
     modules=[RoomJuggler],
-    authors="Kai Friebertshäuser",
-    repo="https://github.com/kfrb/RoomJuggler.jl/blob/{commit}{path}#{line}",
+    authors="Kai Partmann",
+    repo="https://github.com/kaipartmann/RoomJuggler.jl/blob/{commit}{path}#{line}",
     sitename="RoomJuggler.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://kfrb.github.io/RoomJuggler.jl",
+        canonical="https://kaipartmann.github.io/RoomJuggler.jl",
         edit_link="main",
         assets=String[],
     ),
@@ -21,6 +21,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/kfrb/RoomJuggler.jl",
+    repo="github.com/kaipartmann/RoomJuggler.jl",
     devbranch="main",
 )

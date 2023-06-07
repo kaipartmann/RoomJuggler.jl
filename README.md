@@ -3,7 +3,7 @@
 # RoomJuggler
 |**Documentation**| **Build Status**|
 |---|---|
-| [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://kfrb.github.io/RoomJuggler.jl/stable/) [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://kfrb.github.io/RoomJuggler.jl/dev/) | [![Build Status](https://github.com/kfrb/RoomJuggler.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/kfrb/RoomJuggler.jl/actions/workflows/CI.yml?query=branch%3Amain) [![Coverage](https://codecov.io/gh/kfrb/RoomJuggler.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/kfrb/RoomJuggler.jl) |
+| [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://kaipartmann.github.io/RoomJuggler.jl/stable/) [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://kaipartmann.github.io/RoomJuggler.jl/dev/) | [![Build Status](https://github.com/kaipartmann/RoomJuggler.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/kaipartmann/RoomJuggler.jl/actions/workflows/CI.yml?query=branch%3Amain) [![Coverage](https://codecov.io/gh/kaipartmann/RoomJuggler.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/kaipartmann/RoomJuggler.jl) |
 
 A non-registered Julia package to solve a room occupancy problem with simulated annealing
 
@@ -14,7 +14,7 @@ Guests must be accommodated in rooms separated by gender. Guests can request fri
 This problem must be solved every year during the Jugendtagorchester rehearsal weekend. See the website <https://www.jugendtag-orchester.de/orchester> if you want to learn more about the orchestra. `RoomJuggler.jl` was written to simplify the room juggling and help the organizers schedule the rooms.
 
 ## Installation
-For a detailed installation guide, see the documentation: <https://kfrb.github.io/RoomJuggler.jl/stable/>
+For a detailed installation guide, see the documentation: <https://kaipartmann.github.io/RoomJuggler.jl/stable/>
 
 ## Input: Excel file with the data
 The Excel file needs to contain three sheets: `guests`, `rooms`, and `wishes`
@@ -39,7 +39,7 @@ juggle!(rjj)
 report("report.xlsx", rjj)
 ```
 
-The following terminal recording shows how to run `RoomJuggler.jl` on the file [`job_300_guests.xlsx`](https://github.com/kfrb/RoomJuggler.jl/blob/main/examples/job_300_guests.xlsx) in the [`examples`](https://github.com/kfrb/RoomJuggler.jl/blob/main/examples) directory:
+The following terminal recording shows how to run `RoomJuggler.jl` on the file [`job_300_guests.xlsx`](https://github.com/kaipartmann/RoomJuggler.jl/blob/main/examples/job_300_guests.xlsx) in the [`examples`](https://github.com/kaipartmann/RoomJuggler.jl/blob/main/examples) directory:
 
 [![asciicast](https://asciinema.org/a/qzUTtlC6goghCcnZzF4R5jvkn.png)](https://asciinema.org/a/qzUTtlC6goghCcnZzF4R5jvkn?speed=2)
 
